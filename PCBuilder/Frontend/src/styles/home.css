@@ -1,0 +1,30 @@
+.hero-section {
+  min-height: 510px;
+  padding: 75px 10%;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  align-items: center;
+  gap: 60px;
+  background: #f6f8fc;
+}
+
+.hero-content h1 {
+  font-size: 54px;
+  color: #202938;
+}
+
+.hero-description {
+  color: #697180;
+  font-size: 16px;
+}
+
+.hero-placeholder {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: #edf2fa;
+  color: #3478f6;
+}

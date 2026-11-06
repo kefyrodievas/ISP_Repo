@@ -1,0 +1,14 @@
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #20242c;
+  background: #ffffff;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}

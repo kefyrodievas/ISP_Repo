@@ -1,0 +1,21 @@
+﻿
+@{
+    ViewData["Title"] = "PC Builder";
+}
+
+<div id="root"></div>
+
+@section Scripts {
+    @@if (Context.RequestServices
+    .GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>()
+    .IsDevelopment())
+    {
+        <script type="module" src="http://localhost:5173/@@vite/client"></script>
+        <script type="module" src="http://localhost:5173/src/main.jsx"></script>
+    }
+    else
+    {
+        <link rel="stylesheet" href="~/app/assets/index.css" asp-append-version="true" />
+        <script type="module" src="~/app/assets/index.js" asp-append-version="true"></script>
+    }
+}

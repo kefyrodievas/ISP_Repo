@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "PCBuilder",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "Run React",
+      "program": "${workspaceFolder}/PCBuilder/bin/Debug/net10.0/PCBuilder.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/PCBuilder",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Now listening on:\\s+(https?://\\S+)",
+        "uriFormat": "http://localhost:5173/?url=%s"
+      },
+      "env": {
+        "ASPNETCORE_URLS": "http://localhost:5197",
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  ]
+}

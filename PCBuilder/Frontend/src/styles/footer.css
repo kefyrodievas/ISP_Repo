@@ -1,0 +1,37 @@
+.footer {
+  width: 100%;
+  min-height: 80px;
+  padding: 22px 10%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 1px solid #e9ebef;
+  background: #ffffff;
+  color: #7b8493;
+  font-size: 13px;
+}
+
+.footer span:first-child {
+  color: #202938;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.footer span:last-child {
+  text-align: right;
+}
+
+@media (max-width: 600px) {
+  .footer {
+    padding: 22px 5%;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .footer span:last-child {
+    text-align: center;
+  }
+}
