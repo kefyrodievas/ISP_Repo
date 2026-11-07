@@ -1,5 +1,9 @@
 {
   "dependencies": {
-    "react-router-dom": "^7.18.5"
+    "react-router-dom": "^7.18.5",
+    "reactjs-popup": "^2.0.6"
+  },
+  "devDependencies": {
+    "vite": "^8.3.6"
   }
 }
