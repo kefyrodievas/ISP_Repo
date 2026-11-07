@@ -8,6 +8,10 @@ import OrderDetailsPage from './pages/orders/OrderDetailsPage'
 import PaymentPage from './pages/orders/PaymentPage'
 import PaymentResultPage from './pages/orders/PaymentResultPage'
 import OrderCancelPage from './pages/orders/OrderCancelPage'
+import ConfigurationListPage from './pages/configurations/ConfigurationListPage'
+import ConfigurationBuilderPage from './pages/configurations/ConfigurationBuilderPage'
+import ComponentCatalogPage from './pages/catalog/ComponentCatalogPage'
+import ComponentDetailsPage from './pages/catalog/ComponentDetailsPage'
 
 import './styles/global.css'
 import './styles/header.css'
@@ -15,6 +19,7 @@ import './styles/footer.css'
 import './styles/forms.css'
 import './styles/home.css'
 import './styles/orders.css'
+import './styles/popup.css'
 
 function App() {
   return (
@@ -91,6 +96,42 @@ function App() {
             </MainLayout>
           }
         />
+          
+        <Route
+            path="/configurations"
+            element={
+                <MainLayout>
+                    <ConfigurationListPage />
+                </MainLayout>
+            }
+        />
+
+          <Route
+              path="/configurations/:id/build"
+              element={
+                  <MainLayout>
+                      <ConfigurationBuilderPage />
+                  </MainLayout>
+              }
+          />
+
+          <Route
+              path="/components"
+              element={
+                  <MainLayout>
+                      <ComponentCatalogPage />
+                  </MainLayout>
+              }
+          />
+
+          <Route
+              path="/components/:id"
+              element={
+                  <MainLayout>
+                      <ComponentDetailsPage />
+                  </MainLayout>
+              }
+          />
       </Routes>
     </BrowserRouter>
   )
