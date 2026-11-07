@@ -1,3 +1,4 @@
+
 {
   "version": "2.0.0",
   "tasks": [
@@ -12,14 +13,41 @@
         "-File",
         "${workspaceFolder}/Developer/run.ps1"
       ],
+      "windows": {
+        "command": "powershell.exe"
+      },
+      "linux": {
+        "command": "dotnet",
+        "args": [
+          "run",
+          "--project",
+          "${workspaceFolder}/PCBuilder/PCBuilder.csproj",
+          "--",
+          "--urls",
+          "http://localhost:5197"
+        ]
+      },
       "problemMatcher": []
     },
     {
       "label": "Run React",
       "type": "shell",
-      "command": "npm.cmd run dev -- --host 127.0.0.1",
+      "command": "npm.cmd",
+      "args": [
+        "run",
+        "dev",
+        "--",
+        "--host",
+        "127.0.0.1"
+      ],
       "options": {
         "cwd": "${workspaceFolder}/PCBuilder/Frontend"
+      },
+      "windows": {
+        "command": "npm.cmd"
+      },
+      "linux": {
+        "command": "npm"
       },
       "isBackground": true,
       "problemMatcher": {
