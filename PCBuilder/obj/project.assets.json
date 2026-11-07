@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Tautv\\Desktop\\PCBuilder_prj\\PCBuilder\\PCBuilder.csproj",
+      "projectUniqueName": "C:\\Users\\Tautv\\Documents\\GitHub\\ISP_Repo\\PCBuilder\\PCBuilder.csproj",
       "projectName": "PCBuilder",
-      "projectPath": "C:\\Users\\Tautv\\Desktop\\PCBuilder_prj\\PCBuilder\\PCBuilder.csproj",
+      "projectPath": "C:\\Users\\Tautv\\Documents\\GitHub\\ISP_Repo\\PCBuilder\\PCBuilder.csproj",
       "packagesPath": "C:\\Users\\Tautv\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Tautv\\Desktop\\PCBuilder_prj\\PCBuilder\\obj\\",
+      "outputPath": "C:\\Users\\Tautv\\Documents\\GitHub\\ISP_Repo\\PCBuilder\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
