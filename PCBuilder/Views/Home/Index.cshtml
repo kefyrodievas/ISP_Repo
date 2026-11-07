@@ -6,7 +6,7 @@
 <div id="root"></div>
 
 @section Scripts {
-    @@if (Context.RequestServices
+    @if (Context.RequestServices
     .GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>()
     .IsDevelopment())
     {

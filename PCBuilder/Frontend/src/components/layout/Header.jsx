@@ -11,6 +11,7 @@ function Header() {
         <a href="/catalog">Komponentai</a>
         <a href="/configurations">Komplektacijos</a>
         <a href="/orders">Mano užsakymai</a>
+        <a href="/admin/accounts">Administravimas</a>
       </nav>
 
       <div className="nav-actions">
