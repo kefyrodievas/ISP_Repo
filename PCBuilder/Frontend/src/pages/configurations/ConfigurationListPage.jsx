@@ -59,7 +59,7 @@ function ConfigurationListPage() {
                         <th>Komplektacija</th>
                         <th>Pavadinimas</th>
                         <th>Kompiuterio dalys</th>
-                        <th>Kaina</th>
+                        {/*<th>Kaina</th>*/}
                         <th></th>
                         <th></th>
                     </tr>
@@ -75,12 +75,12 @@ function ConfigurationListPage() {
                                     {build.parts.map(part => part.name).slice(0, 3).join(', ') + '...'}
                                 </span>
                             </td>
-                            <td>{
-                                build.parts.reduce((accumulator, currentValue) => 
-                                    accumulator + (currentValue.price * currentValue.quantity * (1 - currentValue.discount * 0.01))
-                                        , 0).toFixed(2)
-                                } €
-                            </td>
+                            {/*<td>{*/}
+                            {/*    build.parts.reduce((accumulator, currentValue) => */}
+                            {/*        accumulator + (currentValue.price * currentValue.quantity * (1 - currentValue.discount * 0.01))*/}
+                            {/*            , 0).toFixed(2)*/}
+                            {/*    } €*/}
+                            {/*</td>*/}
                             <td>
                                 <a
                                     href={`/configurations/${build.id}/build`}

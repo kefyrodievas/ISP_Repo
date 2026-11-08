@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@vitejs/plugin-react": "^6.2.1",
     "react-router-dom": "^7.18.5",
     "reactjs-popup": "^2.0.6"
   },
