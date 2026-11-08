@@ -602,6 +602,18 @@ export const atsiliepimai = [
   { id: 15, dalisId: 24, autoriusId: 4, tekstas: 'Netinkamas turinys, pašalintas administracijos.', įvertinimas: 1, paskelbimoData: '2026-08-02', būsena: 'Trintas administratoriaus' },
 ]
 
+// Bendri laikini atsiliepimų duomenys tik sąsajos demonstracijai.
+// Perkrovus naršyklės puslapį vėl naudojami pradiniai pavyzdžiai.
+let prototipoAtsiliepimai = atsiliepimai.map((atsiliepimas) => ({ ...atsiliepimas }))
+
+export function gautiPrototipoAtsiliepimus() {
+  return prototipoAtsiliepimai
+}
+
+export function išsaugotiPrototipoAtsiliepimus(sąrašas) {
+  prototipoAtsiliepimai = sąrašas
+}
+
 export function formatEuro(suma) {
   if (suma === null || suma === undefined) {
     return null
@@ -647,16 +659,16 @@ export function gautiNuotraukas(dalisId) {
     .sort((a, b) => a.eilėsNumeris - b.eilėsNumeris)
 }
 
-export function gautiRodomusAtsiliepimus(dalisId) {
-  return atsiliepimai.filter(
+export function gautiRodomusAtsiliepimus(dalisId, sąrašas = atsiliepimai) {
+  return sąrašas.filter(
     (atsiliepimas) =>
       atsiliepimas.dalisId === dalisId &&
       (atsiliepimas.būsena === 'Aktyvus' || atsiliepimas.būsena === 'Redaguotas')
   )
 }
 
-export function gautiVidutinįĮvertinimą(dalisId) {
-  const rodomi = gautiRodomusAtsiliepimus(dalisId)
+export function gautiVidutinįĮvertinimą(dalisId, sąrašas = atsiliepimai) {
+  const rodomi = gautiRodomusAtsiliepimus(dalisId, sąrašas)
   if (rodomi.length === 0) {
     return { vidurkis: 0, kiekis: 0 }
   }

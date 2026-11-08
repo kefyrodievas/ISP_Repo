@@ -47,6 +47,24 @@
   white-space: nowrap;
 }
 
+.cart-nav-link {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid #dfe3e9;
+  border-radius: 7px;
+  color: #202938;
+  background: #f7f9fc;
+  font-size: 14px;
+  font-weight: 600;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.cart-nav-link svg { width: 19px; height: 19px; }
+.cart-nav-link:hover { color: #3478f6; border-color: #bcd1fa; background: #edf3ff; }
+
 .login-button,
 .register-button {
   min-height: 40px;
@@ -81,7 +99,7 @@
   background: #2465dc;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1280px) {
   .navbar {
     padding: 18px 5%;
     flex-wrap: wrap;
@@ -110,6 +128,10 @@
   .nav-actions {
     gap: 8px;
   }
+
+  .cart-nav-link { min-height: 36px; padding: 0 10px; font-size: 12px; }
+  .cart-nav-link svg { width: 17px; height: 17px; }
+  .cart-nav-link span { display: none; }
 
   .login-button,
   .register-button {

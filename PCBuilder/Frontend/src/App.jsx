@@ -8,8 +8,10 @@ import OrderDetailsPage from './pages/orders/OrderDetailsPage'
 import PaymentPage from './pages/orders/PaymentPage'
 import PaymentResultPage from './pages/orders/PaymentResultPage'
 import OrderCancelPage from './pages/orders/OrderCancelPage'
+import CartPage from './pages/cart/CartPage'
 import ComponentCatalogPage from './pages/catalog/ComponentCatalogPage'
 import ComponentDetailsPage from './pages/catalog/ComponentDetailsPage'
+import { ReviewsPage, ReviewCreatePage, ReviewEditPage, ReviewDeletePage } from './pages/catalog/ReviewsPages'
 import PriceHistoryPage from './pages/catalog/PriceHistoryPage'
 import AccountStatusPage from './pages/admin/AccountStatusPage'
 import HideReviewPage from './pages/admin/HideReviewPage'
@@ -23,6 +25,7 @@ import './styles/forms.css'
 import './styles/home.css'
 import './styles/orders.css'
 import './styles/catalog.css'
+import './styles/cart.css'
 import './styles/admin.css'
 import './styles/popup.css'
 
@@ -103,6 +106,15 @@ function App() {
         />
 
         <Route
+          path="/cart"
+          element={
+            <MainLayout>
+              <CartPage />
+            </MainLayout>
+          }
+        />
+
+        <Route
           path="/catalog"
           element={
             <MainLayout>
@@ -116,6 +128,42 @@ function App() {
           element={
             <MainLayout>
               <ComponentDetailsPage />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/catalog/:id/reviews"
+          element={
+            <MainLayout>
+              <ReviewsPage />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/catalog/:id/reviews/new"
+          element={
+            <MainLayout>
+              <ReviewCreatePage />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/catalog/:id/reviews/:reviewId/edit"
+          element={
+            <MainLayout>
+              <ReviewEditPage />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/catalog/:id/reviews/:reviewId/delete"
+          element={
+            <MainLayout>
+              <ReviewDeletePage />
             </MainLayout>
           }
         />

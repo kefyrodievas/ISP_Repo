@@ -1,13 +1,31 @@
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { formatEuro } from '../../data/mockData'
+import { gautiKrepšelį } from '../../data/demoCart'
 
 function PaymentPage() {
   const navigate = useNavigate()
   const { id } = useParams()
+  const išKrepšelio = id === 'cart'
+  const krepšelis = išKrepšelio ? gautiKrepšelį() : null
 
   function handleSubmit(event) {
     event.preventDefault()
     navigate(`/orders/${id}/payment/result`)
   }
+
+  if (išKrepšelio && !krepšelis) {
+    return (
+      <section className="payment-page">
+        <div className="page-heading"><h1>Užsakymo apmokėjimas</h1></div>
+        <div className="payment-order-summary">
+          <p>Krepšelis tuščias. Pirmiausia pasirinkite prekę.</p>
+          <Link to="/catalog" className="primary-button">Į komponentų katalogą</Link>
+        </div>
+      </section>
+    )
+  }
+
+  const suma = išKrepšelio ? formatEuro(krepšelis.suma) : '1 849,00 €'
 
   return (
     <section className="payment-page">
@@ -83,9 +101,16 @@ function PaymentPage() {
         <div className="payment-order-summary">
           <h2>Užsakymo suma</h2>
 
+          {išKrepšelio && (
+            <div className="payment-summary">
+              <span>{krepšelis.dalis.pavadinimas} × {krepšelis.kiekis}</span>
+              <strong>{suma}</strong>
+            </div>
+          )}
+
           <div className="payment-summary">
             <span>Prekių suma</span>
-            <strong>1 849,00 €</strong>
+            <strong>{suma}</strong>
           </div>
 
           <div className="payment-summary">
@@ -95,14 +120,14 @@ function PaymentPage() {
 
           <div className="payment-summary payment-summary-total">
             <span>Mokėtina suma</span>
-            <strong>1 849,00 €</strong>
+            <strong>{suma}</strong>
           </div>
         </div>
 
         <div className="payment-actions">
-          <a href={`/orders/${id}`} className="secondary-button">
-            Grįžti į užsakymą
-          </a>
+          <Link to={išKrepšelio ? '/cart' : `/orders/${id}`} className="secondary-button">
+            {išKrepšelio ? 'Grįžti į krepšelį' : 'Grįžti į užsakymą'}
+          </Link>
 
           <button type="submit" className="primary-button">
             Apmokėti užsakymą
