@@ -1,0 +1,28 @@
+/* Tik krepšelio prototipo ir prekės kiekio pasirinkimo stiliai. */
+.cart-product-actions { align-items: flex-end; }
+.cart-quantity-field { display: flex; flex-direction: column; gap: 6px; }
+.cart-quantity-field label { font-size: 13px; font-weight: 600; color: #465267; }
+.cart-quantity-control { display: flex; height: 42px; border: 1px solid #dfe3e9; border-radius: 7px; overflow: hidden; }
+.cart-quantity-control button { width: 34px; border: 0; background: #f3f5f8; color: #202938; font-size: 18px; }
+.cart-quantity-control button:hover:not(:disabled) { background: #e7edfa; }
+.cart-quantity-control input { width: 57px; padding: 0 4px; border: 0; text-align: center; color: #202938; }
+.cart-quantity-control input::-webkit-outer-spin-button, .cart-quantity-control input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.cart-quantity-control input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
+.cart-page { width: 100%; max-width: 1240px; margin: 0 auto; padding: 65px 40px 90px; }
+.cart-panel { padding: 30px 32px; border: 1px solid #e8ecf2; border-radius: 14px; background: #fff; box-shadow: 0 8px 28px rgba(32, 36, 44, 0.045); }
+.cart-table-wrapper { width: 100%; overflow-x: auto; }
+.cart-table { width: 100%; border-collapse: collapse; min-width: 520px; text-align: left; }
+.cart-table th { padding: 12px; font-size: 13px; color: #697180; border-bottom: 1px solid #e8ecf2; }
+.cart-table td { padding: 20px 12px; font-size: 14px; color: #465267; border-bottom: 1px solid #e8ecf2; }
+.cart-product-link { color: #3478f6; font-weight: 600; }
+.cart-product-link:hover { text-decoration: underline; }
+.cart-total { display: flex; justify-content: flex-end; gap: 24px; align-items: baseline; padding: 24px 12px; color: #465267; }
+.cart-total strong { font-size: 24px; color: #202938; }
+.cart-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.cart-prototype-note { margin: 18px 0 0; color: #697180; font-size: 13px; }
+@media (max-width: 600px) {
+  .cart-page { padding: 35px 18px 55px; }
+  .cart-panel { padding: 20px 16px; }
+  .cart-total { justify-content: space-between; }
+  .cart-actions > * { flex: 1 1 100%; }
+}
