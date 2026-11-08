@@ -16,7 +16,7 @@ function PaymentResultPage() {
         <h2>Apmokėjimas sėkmingas!</h2>
 
         <p>
-          Užsakymas <strong>{id}</strong> sėkmingai apmokėtas.
+          Užsakymas sėkmingai apmokėtas.
           Dėkojame, kad apsiperkate PCBuilder!
         </p>
 

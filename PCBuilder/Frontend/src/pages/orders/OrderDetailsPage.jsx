@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom'
 
 const orders = [
   {
-    id: 'PB-2026-001',
+    id: '0',
     creationDate: '2026-10-28',
     paymentDate: null,
     deliveryDate: null,
@@ -64,7 +64,6 @@ function OrderDetailsPage() {
 
       <div className="orders-table-container">
         <div className="orders-table-heading">
-          <h2>{order.id}</h2>
           <span className="order-status">{order.status}</span>
         </div>
 

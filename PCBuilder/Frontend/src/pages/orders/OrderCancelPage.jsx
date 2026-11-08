@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom'
 
 const orders = [
   {
-    id: 'PB-2026-001',
+    id: '0',
     creationDate: '2026-10-28',
     total: '1 849,00 €',
     status: 'Nesumokėtas',
@@ -27,10 +27,6 @@ function OrderCancelPage() {
       {order ? (
         <div className="order-cancel-confirmation">
           <h2>Ar tikrai norite atšaukti užsakymą?</h2>
-
-          <p>
-            <strong>Užsakymo numeris:</strong> {order.id}
-          </p>
 
           <p>
             <strong>Sukūrimo data:</strong> {order.creationDate}

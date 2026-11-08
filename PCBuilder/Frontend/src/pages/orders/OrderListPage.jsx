@@ -1,6 +1,6 @@
 const orders = [
   {
-    id: 'PB-2026-001',
+    id: '0',
     creationDate: '2026-10-28',
     configurations: ['Žaidimų kompiuteris'],
     parts: ['Papildomas SSD 1 TB'],
@@ -27,7 +27,6 @@ function OrderListPage() {
         <table className="orders-table">
           <thead>
             <tr>
-              <th>Užsakymas</th>
               <th>Sukūrimo data</th>
               <th>Užsakytos prekės</th>
               <th>Prekių suma</th>
@@ -40,7 +39,6 @@ function OrderListPage() {
           <tbody>
             {orders.map((order) => (
               <tr key={order.id}>
-                <td>{order.id}</td>
                 <td>{order.creationDate}</td>
                 <td>
                   <strong>{order.configurations.join(', ')}</strong>
