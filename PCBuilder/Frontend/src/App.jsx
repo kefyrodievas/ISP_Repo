@@ -13,6 +13,8 @@ import ComponentDetailsPage from './pages/catalog/ComponentDetailsPage'
 import PriceHistoryPage from './pages/catalog/PriceHistoryPage'
 import AccountStatusPage from './pages/admin/AccountStatusPage'
 import HideReviewPage from './pages/admin/HideReviewPage'
+import ConfigurationListPage from './pages/configurations/ConfigurationListPage'
+import ConfigurationBuilderPage from './pages/configurations/ConfigurationBuilderPage'
 
 import './styles/global.css'
 import './styles/header.css'
@@ -22,6 +24,7 @@ import './styles/home.css'
 import './styles/orders.css'
 import './styles/catalog.css'
 import './styles/admin.css'
+import './styles/popup.css'
 
 function App() {
   return (
@@ -140,6 +143,24 @@ function App() {
           element={
             <MainLayout>
               <HideReviewPage />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/configurations"
+          element={
+            <MainLayout>
+              <ConfigurationListPage />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/configurations/:id/build"
+          element={
+            <MainLayout>
+              <ConfigurationBuilderPage />
             </MainLayout>
           }
         />
