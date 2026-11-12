@@ -90,7 +90,8 @@ function ConfigurationListPage() {
                                 </a>
                             </td>
                             <td>
-                                <Popup ref={ref} trigger={<button className="danger-button">Ištrinti</button>} position="bottom center">
+                                <button className="danger-button" onClick={() => HandleDelete(build.id)}>Ištrinti</button>
+                                {/* <Popup ref={ref} trigger={<button className="danger-button">Ištrinti</button>} position="bottom center">
                                     <div className="cancel-popup">
                                         <center>
                                             <p>Ar tikrai norite ištrinti?</p>
@@ -105,7 +106,7 @@ function ConfigurationListPage() {
                                             </button>
                                         </center>
                                     </div>
-                                </Popup>
+                                </Popup> */}
                             </td>
                         </tr>
                     ))}

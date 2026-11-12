@@ -1,20 +1,23 @@
-import { useParams } from 'react-router-dom'
 
-const orders = [
-  {
-    id: '0',
-    creationDate: '2026-10-28',
-    total: '1 849,00 €',
-    status: 'Nesumokėtas',
-  },
-]
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import { formatEuro } from '../../data/mockData'
+import { gautiUžsakymą, atšauktiUžsakymą } from '../../data/mockOrder'
 
 function OrderCancelPage() {
   const { id } = useParams()
-  const order = orders.find((order) => order.id === id)
+  const order = gautiUžsakymą(id)
+  const navigate = useNavigate()
+
+  const galimaAtšaukti =
+    (order?.status === 'Nesumokėtas' || order?.status === 'Sumokėtas') &&
+    !order?.deliveryDate
 
   function handleCancel() {
-    alert('Užsakymo atšaukimas bus galimas prijungus duomenų bazę.')
+    const atšaukta = atšauktiUžsakymą(id)
+
+    if (atšaukta) {
+      navigate(`/orders/${id}`)
+    }
   }
 
   return (
@@ -33,18 +36,22 @@ function OrderCancelPage() {
           </p>
 
           <p>
-            <strong>Suma:</strong> {order.total}
+            <strong>Suma:</strong> {formatEuro(order.productSum - order.discount)}
+          </p>
+
+          <p>
+            <strong>Siuntos kodas:</strong> {order.shipmentCode || 'Nesukurta'}
           </p>
 
           <p>
             Atšaukus užsakymą, jo būsena bus pakeista į „Atšauktas“.
           </p>
 
-          {order.status === 'Nesumokėtas' ? (
+          {galimaAtšaukti ? (
             <div className="order-cancel-actions">
-              <a href={`/orders/${order.id}`} className="secondary-button">
+              <Link to={`/orders/${order.id}`} className="secondary-button">
                 Grįžti į užsakymą
-              </a>
+              </Link>
 
               <button
                 type="button"
@@ -64,16 +71,6 @@ function OrderCancelPage() {
           <p>Pasirinktas užsakymas neegzistuoja.</p>
         </div>
       )}
-
-      <div className="order-cancel-actions">
-        <a href="/orders" className="secondary-button">
-          Mano užsakymai
-        </a>
-
-        <a href="/" className="secondary-button">
-          Į pagrindinį puslapį
-        </a>
-      </div>
     </section>
   )
 }

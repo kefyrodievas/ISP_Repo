@@ -1,32 +1,40 @@
-import { useParams } from 'react-router-dom'
 
-const orders = [
-  {
-    id: '0',
-    creationDate: '2026-10-28',
-    paymentDate: null,
-    deliveryDate: null,
-    configurations: [
-      {
-        name: 'Žaidimų kompiuteris',
-        quantity: 1,
-      },
-    ],
-    parts: [
-      {
-        name: 'Papildomas SSD 1 TB',
-        quantity: 1,
-      },
-    ],
-    productSum: 1849,
-    discount: 0,
-    status: 'Nesumokėtas',
-  },
-]
+import { useEffect, useState } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import { formatEuro } from '../../data/mockData'
+import {
+  gautiUžsakymą,
+  atnaujintiUžsakymusIšServerio,
+} from '../../data/mockOrder'
 
 function OrderDetailsPage() {
   const { id } = useParams()
-  const order = orders.find((order) => order.id === id)
+  const [order, setOrder] = useState(() => gautiUžsakymą(id))
+
+  useEffect(() => {
+    function atnaujintiUžsakymą() {
+      setOrder(gautiUžsakymą(id))
+    }
+
+    async function sinchronizuotiUžsakymą() {
+      await atnaujintiUžsakymusIšServerio()
+      atnaujintiUžsakymą()
+    }
+
+    window.addEventListener('orders-updated', atnaujintiUžsakymą)
+
+    sinchronizuotiUžsakymą()
+
+    const interval = window.setInterval(
+      sinchronizuotiUžsakymą,
+      3000
+    )
+
+    return () => {
+      window.removeEventListener('orders-updated', atnaujintiUžsakymą)
+      window.clearInterval(interval)
+    }
+  }, [id])
 
   if (!order) {
     return (
@@ -40,20 +48,19 @@ function OrderDetailsPage() {
           <h2>Užsakymas nerastas</h2>
           <p>Pasirinktas užsakymas neegzistuoja arba nebėra pasiekiamas.</p>
 
-          <div className="order-cancel-actions">
-            <a href="/orders" className="secondary-button">
-              Mano užsakymai
-            </a>
-            <a href="/" className="primary-button">
-              Į pagrindinį puslapį
-            </a>
-          </div>
+          <Link to="/orders" className="secondary-button">
+            Grįžti į užsakymus
+          </Link>
         </div>
       </section>
     )
   }
 
   const total = order.productSum - order.discount
+
+  const galimaAtšaukti =
+    (order.status === 'Nesumokėtas' || order.status === 'Sumokėtas') &&
+    !order.deliveryDate
 
   return (
     <section className="order-details-page">
@@ -84,6 +91,18 @@ function OrderDetailsPage() {
                 <td>Pristatymo data</td>
                 <td>{order.deliveryDate || 'Nepristatytas'}</td>
               </tr>
+              <tr>
+                <td>Siuntos kodas</td>
+                <td>{order.shipmentCode || 'Nesukurta'}</td>
+              </tr>
+              {order.address && (
+                <tr>
+                  <td>Pristatymo adresas</td>
+                  <td>
+                    {Object.values(order.address).filter(Boolean).join(', ')}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
 
@@ -131,45 +150,41 @@ function OrderDetailsPage() {
             <tbody>
               <tr>
                 <td>Prekių suma</td>
-                <td>{order.productSum.toFixed(2)} €</td>
+                <td>{formatEuro(order.productSum)}</td>
               </tr>
               <tr>
                 <td>Nuolaida</td>
-                <td>{order.discount.toFixed(2)} €</td>
+                <td>{formatEuro(order.discount)}</td>
               </tr>
               <tr>
                 <td><strong>Galutinė suma</strong></td>
-                <td><strong>{total.toFixed(2)} €</strong></td>
+                <td><strong>{formatEuro(total)}</strong></td>
               </tr>
             </tbody>
           </table>
 
           <div className="order-cancel-actions">
             {order.status === 'Nesumokėtas' && (
-              <>
-                <a
-                  href={`/orders/${order.id}/payment`}
-                  className="primary-button"
-                >
-                  Apmokėti užsakymą
-                </a>
-
-                <a
-                  href={`/orders/${order.id}/cancel`}
-                  className="danger-button"
-                >
-                  Atšaukti užsakymą
-                </a>
-              </>
+              <Link
+                to={`/orders/${order.id}/payment`}
+                className="primary-button"
+              >
+                Apmokėti užsakymą
+              </Link>
             )}
 
-            <a href="/orders" className="secondary-button">
-              Užsakymų sąrašas
-            </a>
+            {galimaAtšaukti && (
+              <Link
+                to={`/orders/${order.id}/cancel`}
+                className="danger-button"
+              >
+                Atšaukti užsakymą
+              </Link>
+            )}
 
-            <a href="/" className="secondary-button">
-              Į pagrindinį puslapį
-            </a>
+            <Link to="/orders" className="secondary-button">
+              Grįžti į užsakymus
+            </Link>
           </div>
         </div>
       </div>

@@ -1,14 +1,36 @@
+
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+
+// PAKEISTA: anksčiau buvo importuojamas tik Link.
+// Dabar papildomai importuojamas useNavigate, kad galėtume nukreipti po užsakymo sukūrimo.
+import { Link, useNavigate } from 'react-router-dom'
+
 import { formatEuro } from '../../data/mockData'
 import { gautiKrepšelį, pašalintiKrepšelį } from '../../data/demoCart'
+
+// PRIDĖTA: funkcija užsakymui sukurti iš krepšelio.
+import { sukurtiUžsakymą } from '../../data/mockOrder'
 
 function CartPage() {
   const [krepšelis, setKrepšelis] = useState(gautiKrepšelį)
 
+  // PRIDĖTA: navigacijos funkcija.
+  const navigate = useNavigate()
+
   function pašalinti() {
     pašalintiKrepšelį()
     setKrepšelis(null)
+  }
+
+  // PRIDĖTA: anksčiau šios funkcijos nebuvo.
+  // Sukuriamas užsakymas ir atidaromas jo apmokėjimo puslapis.
+  function pereitiPrieApmokėjimo() {
+    const užsakymas = sukurtiUžsakymą()
+
+    if (!užsakymas) return
+
+    setKrepšelis(null)
+    navigate(`/orders/${užsakymas.id}/payment`)
   }
 
   if (!krepšelis) {
@@ -63,7 +85,13 @@ function CartPage() {
         </div>
         <div className="cart-actions">
           <Link to={`/catalog/${dalis.id}`} className="secondary-button">Grįžti į prekę</Link>
-          <Link to="/orders/cart/payment" className="primary-button">Pereiti prie apmokėjimo</Link>
+
+          {/* PAKEISTA:
+              Buvo: <Link to="/orders/cart/payment" className="primary-button">Pereiti prie apmokėjimo</Link>
+              Dabar: mygtukas pirmiausia sukuria užsakymą, tada nukreipia į jo apmokėjimą. */}
+          <button type="button" className="primary-button" onClick={pereitiPrieApmokėjimo}>
+            Pereiti prie apmokėjimo
+          </button>
         </div>
       </div>
     </section>

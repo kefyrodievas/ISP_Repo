@@ -1,16 +1,42 @@
-const orders = [
-  {
-    id: '0',
-    creationDate: '2026-10-28',
-    configurations: ['Žaidimų kompiuteris'],
-    parts: ['Papildomas SSD 1 TB'],
-    total: '1 849,00 €',
-    discount: '0,00 €',
-    status: 'Nesumokėtas',
-  },
-]
+
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { formatEuro } from '../../data/mockData'
+import {
+  gautiUžsakymus,
+  atnaujintiUžsakymusIšServerio,
+} from '../../data/mockOrder'
 
 function OrderListPage() {
+  const [orders, setOrders] = useState(() =>
+    [...gautiUžsakymus()].sort(
+      (a, b) => Number(b.id) - Number(a.id)
+    )
+  )
+
+  useEffect(() => {
+    function atnaujintiSąrašą() {
+      setOrders(
+        [...gautiUžsakymus()].sort(
+          (a, b) => Number(b.id) - Number(a.id)
+        )
+      )
+    }
+
+    async function gautiAtnaujintusUžsakymus() {
+      await atnaujintiUžsakymusIšServerio()
+      atnaujintiSąrašą()
+    }
+
+    window.addEventListener('orders-updated', atnaujintiSąrašą)
+
+    gautiAtnaujintusUžsakymus()
+
+    return () => {
+      window.removeEventListener('orders-updated', atnaujintiSąrašą)
+    }
+  }, [])
+
   return (
     <section className="orders-page">
       <div className="page-heading">
@@ -21,15 +47,17 @@ function OrderListPage() {
       <div className="orders-table-container">
         <div className="orders-table-heading">
           <h2>Užsakymų istorija</h2>
-          <span>{orders.length} užsakymas</span>
+          <span>
+            {orders.length} {orders.length === 1 ? 'užsakymas' : 'užsakymai'}
+          </span>
         </div>
 
         <table className="orders-table">
           <thead>
             <tr>
               <th>Sukūrimo data</th>
-              <th>Užsakytos prekės</th>
-              <th>Prekių suma</th>
+              <th>Siuntos kodas</th>
+              <th>Suma</th>
               <th>Nuolaida</th>
               <th>Būsena</th>
               <th></th>
@@ -40,26 +68,23 @@ function OrderListPage() {
             {orders.map((order) => (
               <tr key={order.id}>
                 <td>{order.creationDate}</td>
-                <td>
-                  <strong>{order.configurations.join(', ')}</strong>
-                  <span className="order-components">
-                    {order.parts.join(', ')}
-                  </span>
-                </td>
-                <td>{order.total}</td>
-                <td>{order.discount}</td>
+                <td>{order.shipmentCode || '-'}</td>
+                <td>{formatEuro(order.productSum - order.discount)}</td>
+                <td>{formatEuro(order.discount)}</td>
+
                 <td>
                   <span className="order-status">
                     {order.status}
                   </span>
                 </td>
+
                 <td>
-                  <a
-                    href={`/orders/${order.id}`}
+                  <Link
+                    to={`/orders/${order.id}`}
                     className="order-details-link"
                   >
                     Peržiūrėti
-                  </a>
+                  </Link>
                 </td>
               </tr>
             ))}
@@ -67,9 +92,9 @@ function OrderListPage() {
         </table>
       </div>
 
-      <a href="/" className="secondary-button">
+      <Link to="/" className="secondary-button">
         Į pagrindinį puslapį
-      </a>
+      </Link>
     </section>
   )
 }

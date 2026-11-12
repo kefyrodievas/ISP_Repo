@@ -1,31 +1,93 @@
+
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { formatEuro } from '../../data/mockData'
-import { gautiKrepšelį } from '../../data/demoCart'
+
+// PRIDĖTA: užsakymo duomenys gaunami iš bendro mockOrder.js modulio.
+import {
+  gautiUžsakymą,
+  atnaujintiUžsakymoAdresą,
+} from '../../data/mockOrder'
 
 function PaymentPage() {
   const navigate = useNavigate()
   const { id } = useParams()
-  const išKrepšelio = id === 'cart'
-  const krepšelis = išKrepšelio ? gautiKrepšelį() : null
+
+  // PAKEISTA: anksčiau buvo tikrinama, ar id === 'cart',
+  // ir tokiu atveju duomenys buvo gaunami iš krepšelio.
+  // Dabar visada gaunamas jau sukurtas užsakymas.
+  const order = gautiUžsakymą(id)
+
+  // PRIDĖTA: patikrinama, ar užsakymą dar galima apmokėti.
+  const galimaApmokėti = order && order.status === 'Nesumokėtas'
 
   function handleSubmit(event) {
     event.preventDefault()
+
+    // PRIDĖTA: iš formos surenkami pristatymo adreso ir banko duomenys.
+    const formData = new FormData(event.currentTarget)
+
+    const adresas = {
+      country: formData.get('country'),
+      city: formData.get('city'),
+      street: formData.get('street'),
+      houseNumber: formData.get('houseNumber'),
+      apartmentNumber: formData.get('apartmentNumber'),
+      postalCode: formData.get('postalCode'),
+      bank: formData.get('bank'),
+    }
+
+    // PRIDĖTA: adresas išsaugomas prie esamo užsakymo.
+    const atnaujinta = atnaujintiUžsakymoAdresą(id, adresas)
+
+    if (!atnaujinta) return
+
+    // PAKEISTA: anksčiau buvo naudojamas id iš krepšelio arba užsakymo.
+    // Dabar pereinama prie konkretaus jau sukurto užsakymo rezultato.
     navigate(`/orders/${id}/payment/result`)
   }
 
-  if (išKrepšelio && !krepšelis) {
+  // PAKEISTA: anksčiau buvo tikrinamas tuščias krepšelis.
+  // Dabar tikrinama, ar užsakymas egzistuoja.
+  if (!order) {
     return (
       <section className="payment-page">
-        <div className="page-heading"><h1>Užsakymo apmokėjimas</h1></div>
+        <div className="page-heading">
+          <h1>Užsakymo apmokėjimas</h1>
+        </div>
         <div className="payment-order-summary">
-          <p>Krepšelis tuščias. Pirmiausia pasirinkite prekę.</p>
-          <Link to="/catalog" className="primary-button">Į komponentų katalogą</Link>
+          <p>Užsakymas nerastas arba nebėra pasiekiamas.</p>
+          <Link to="/orders" className="primary-button">
+            Mano užsakymai
+          </Link>
         </div>
       </section>
     )
   }
 
-  const suma = išKrepšelio ? formatEuro(krepšelis.suma) : '1 849,00 €'
+  // PRIDĖTA: neleidžiama pakartotinai apmokėti jau apmokėto
+  // arba atšaukto užsakymo.
+  if (!galimaApmokėti) {
+    return (
+      <section className="payment-page">
+        <div className="page-heading">
+          <h1>Užsakymo apmokėjimas</h1>
+        </div>
+        <div className="payment-order-summary">
+          <p>Šio užsakymo apmokėti nebegalima.</p>
+          <p>Užsakymo būsena: {order.status}</p>
+          <Link to={`/orders/${order.id}`} className="primary-button">
+            Peržiūrėti užsakymą
+          </Link>
+        </div>
+      </section>
+    )
+  }
+
+  // PAKEISTA: suma ir nuolaida gaunamos iš užsakymo,
+  // o ne iš krepšelio ar įrašytos fiksuotos sumos.
+  const suma = order.productSum
+  const nuolaida = order.discount
+  const mokėtinaSuma = suma - nuolaida
 
   return (
     <section className="payment-page">
@@ -101,32 +163,33 @@ function PaymentPage() {
         <div className="payment-order-summary">
           <h2>Užsakymo suma</h2>
 
-          {išKrepšelio && (
-            <div className="payment-summary">
-              <span>{krepšelis.dalis.pavadinimas} × {krepšelis.kiekis}</span>
-              <strong>{suma}</strong>
+          {/* PAKEISTA: prekės ir jų kiekiai rodomi iš užsakymo duomenų. */}
+          {[...order.configurations, ...order.parts].map((item) => (
+            <div className="payment-summary" key={item.name}>
+              <span>{item.name} × {item.quantity}</span>
             </div>
-          )}
+          ))}
 
           <div className="payment-summary">
             <span>Prekių suma</span>
-            <strong>{suma}</strong>
+            <strong>{formatEuro(suma)}</strong>
           </div>
 
           <div className="payment-summary">
             <span>Nuolaida</span>
-            <strong>0,00 €</strong>
+            <strong>{formatEuro(nuolaida)}</strong>
           </div>
 
           <div className="payment-summary payment-summary-total">
             <span>Mokėtina suma</span>
-            <strong>{suma}</strong>
+            <strong>{formatEuro(mokėtinaSuma)}</strong>
           </div>
         </div>
 
         <div className="payment-actions">
-          <Link to={išKrepšelio ? '/cart' : `/orders/${id}`} className="secondary-button">
-            {išKrepšelio ? 'Grįžti į krepšelį' : 'Grįžti į užsakymą'}
+          {/* PAKEISTA: visada grįžtama į konkretaus užsakymo peržiūrą. */}
+          <Link to={`/orders/${id}`} className="secondary-button">
+            Grįžti į užsakymą
           </Link>
 
           <button type="submit" className="primary-button">
