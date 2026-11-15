@@ -32,11 +32,11 @@ const builds = [
 ]
 
 function ConfigurationListPage() {
-    const ref = useRef();
     
     function HandleDelete(id) {
-        alert('Komplektacijos ištrynimas bus galimas prijungus duomenų bazę.')
-        ref.current.close()
+        if (confirm("Ar tikrai norite ištrinti komplektaciją (id " + id + ")?")) {
+            alert('Komplektacijos ištrynimas bus galimas prijungus duomenų bazę.')
+        }
     }
     
     return (
@@ -91,22 +91,6 @@ function ConfigurationListPage() {
                             </td>
                             <td>
                                 <button className="danger-button" onClick={() => HandleDelete(build.id)}>Ištrinti</button>
-                                {/* <Popup ref={ref} trigger={<button className="danger-button">Ištrinti</button>} position="bottom center">
-                                    <div className="cancel-popup">
-                                        <center>
-                                            <p>Ar tikrai norite ištrinti?</p>
-                                            <button className="danger-button"
-                                                    style={{margin: "5px"}} 
-                                                    onClick={() => HandleDelete(build.id)}>
-                                                Ištrinti
-                                            </button>
-                                            <button className="secondary-button"
-                                                    onClick={() => ref.current.close()}>
-                                                Atšaukti
-                                            </button>
-                                        </center>
-                                    </div>
-                                </Popup> */}
                             </td>
                         </tr>
                     ))}
