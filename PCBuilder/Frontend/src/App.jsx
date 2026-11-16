@@ -17,6 +17,12 @@ import AccountStatusPage from './pages/admin/AccountStatusPage'
 import HideReviewPage from './pages/admin/HideReviewPage'
 import ConfigurationListPage from './pages/configurations/ConfigurationListPage'
 import ConfigurationBuilderPage from './pages/configurations/ConfigurationBuilderPage'
+import ComponentBuilderPage from './pages/seller/ComponentCreatorPage'
+import ComponentListPage from './pages/seller/ComponentListPage'
+import DiscountPage from './pages/seller/DiscountPage'
+import SalesReportPage from './pages/seller/SalesReportPage'
+
+
 
 import './styles/global.css'
 import './styles/header.css'
@@ -209,6 +215,38 @@ function App() {
           element={
             <MainLayout>
               <ConfigurationBuilderPage />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/components/:id"
+          element={
+            <MainLayout>
+              <ComponentBuilderPage />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/components/:id/discount"
+          element={
+            <MainLayout>
+              <DiscountPage />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/components"
+          element={
+            <MainLayout>
+              <ComponentListPage />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/sales"
+          element={
+            <MainLayout>
+              <SalesReportPage />
             </MainLayout>
           }
         />

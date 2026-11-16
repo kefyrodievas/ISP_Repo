@@ -12,6 +12,8 @@ function Header() {
         <a href="/configurations">Komplektacijos</a>
         <a href="/orders">Mano užsakymai</a>
         <a href="/admin/accounts">Administravimas</a>
+        <a href="/components">Komponentai(Pardavėjo sąsaja)</a>
+        <a href="/sales">Pardavimų ataskaita(Pardavėjo sąsaja)</a>
       </nav>
 
       <div className="nav-actions">
