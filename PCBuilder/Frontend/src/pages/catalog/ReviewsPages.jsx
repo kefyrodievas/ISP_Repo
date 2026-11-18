@@ -1,69 +1,69 @@
+
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
-  kompiuterioDalys,
-  gautiPaskyrosVardą,
-  gautiRodomusAtsiliepimus,
-  gautiVidutinįĮvertinimą,
-  gautiPrototipoAtsiliepimus,
-  išsaugotiPrototipoAtsiliepimus,
+  computerParts,
+  getAccountName,
+  getVisibleReviews,
+  getAverageRating,
+  getPrototypeReviews,
+  savePrototypeReviews,
 } from '../../data/mockData'
 
-// Tik sąsajos prototipas. Duomenys išsaugomi laikinai (iki puslapio perkrovimo).
-// Keturi puslapiai viename faile, kad nereikėtų papildomų Context/Provider failų.
-// Demonstracijoje nauji atsiliepimai priskiriami pavyzdinei paskyrai.
-// Redagavimas ir šalinimas sąmoningai neribojami pagal autorių.
-const DEMO_AUTORIAUS_ID = 1
+const DEMO_AUTHOR_ID = 1
 
-function gautiDalį(id) {
-  return kompiuterioDalys.find((dalis) => dalis.id === Number(id))
+function getPart(id) {
+  return computerParts.find((part) => part.id === Number(id))
 }
 
-function Žvaigždutės({ įvertinimas }) {
+function RatingStars({ rating }) {
   return (
-    <span className="rating-stars" aria-label={`${įvertinimas} iš 5 žvaigždučių`}>
-      {'★★★★★'.slice(0, įvertinimas)}{'☆☆☆☆☆'.slice(0, 5 - įvertinimas)}
+    <span className="rating-stars" aria-label={`${rating} iš 5 žvaigždučių`}>
+      {'★★★★★'.slice(0, rating)}{'☆☆☆☆☆'.slice(0, 5 - rating)}
     </span>
   )
 }
 
-function LangasNerastas({ tekstas }) {
+function NotFoundPage({ message }) {
   return (
     <section className="component-details-page">
       <div className="component-info-card">
         <h1>Langas nepasiekiamas</h1>
-        <p>{tekstas}</p>
+        <p>{message}</p>
         <Link to="/catalog" className="secondary-button">Į katalogą</Link>
       </div>
     </section>
   )
 }
 
-function PuslapioAntraštė({ dalis, pavadinimas, paaiškinimas }) {
+function PageHeading({ part, title, description }) {
   return (
     <div className="page-heading">
-      <h1>{pavadinimas}</h1>
-      <p>{dalis.pavadinimas} · {paaiškinimas}</p>
+      <h1>{title}</h1>
+      <p>{part.name} · {description}</p>
     </div>
   )
 }
 
-// 1 langas: visų vienos prekės atsiliepimų sąrašas.
 export function ReviewsPage() {
   const { id } = useParams()
-  const dalis = gautiDalį(id)
-  if (!dalis) return <LangasNerastas tekstas="Prekė nerasta." />
+  const part = getPart(id)
+  if (!part) return <NotFoundPage message="Prekė nerasta." />
 
-  const matomi = gautiRodomusAtsiliepimus(dalis.id, gautiPrototipoAtsiliepimus())
-    .sort((a, b) => b.paskelbimoData.localeCompare(a.paskelbimoData))
-  const { vidurkis, kiekis } = gautiVidutinįĮvertinimą(dalis.id, gautiPrototipoAtsiliepimus())
+  const visibleReviews = getVisibleReviews(part.id, getPrototypeReviews())
+    .sort((a, b) => b.publicationDate.localeCompare(a.publicationDate))
+  const { average, count } = getAverageRating(part.id, getPrototypeReviews())
 
   return (
     <section className="component-details-page">
-      <PuslapioAntraštė dalis={dalis} pavadinimas="Atsiliepimai" paaiškinimas="Visi pirkėjų atsiliepimai" />
+      <PageHeading part={part} title="Atsiliepimai" description="Visi pirkėjų atsiliepimai" />
       <div className="component-info-card">
         <div className="reviews-summary">
-          {kiekis > 0 ? <><Žvaigždutės įvertinimas={Math.round(vidurkis)} /> {vidurkis.toFixed(1)} iš 5 ({kiekis})</> : 'Atsiliepimų dar nėra'}
+          {count > 0 ? (
+            <>
+              <RatingStars rating={Math.round(average)} /> {average.toFixed(1)} iš 5 ({count})
+            </>
+          ) : 'Atsiliepimų dar nėra'}
         </div>
 
         <div className="reviews-cta-panel">
@@ -76,30 +76,34 @@ export function ReviewsPage() {
           </div>
 
           <div className="reviews-top-actions">
-            <Link to={`/catalog/${dalis.id}`} className="secondary-button">
+            <Link to={`/catalog/${part.id}`} className="secondary-button">
               Grįžti į prekę
             </Link>
-            <Link to={`/catalog/${dalis.id}/reviews/new`} className="primary-button">
+            <Link to={`/catalog/${part.id}/reviews/new`} className="primary-button">
               Rašyti atsiliepimą
             </Link>
           </div>
         </div>
 
-        {matomi.length === 0 ? (
+        {visibleReviews.length === 0 ? (
           <div className="reviews-empty">Šiai prekei atsiliepimų kol kas nėra.</div>
         ) : (
           <div className="reviews-list">
-            {matomi.map((atsiliepimas) => (
-              <article className="review-card" key={atsiliepimas.id}>
+            {visibleReviews.map((review) => (
+              <article className="review-card" key={review.id}>
                 <div className="review-card-header">
-                  <span className="review-card-author">{gautiPaskyrosVardą(atsiliepimas.autoriusId)}</span>
-                  <span className="review-card-date">{atsiliepimas.paskelbimoData}</span>
+                  <span className="review-card-author">{getAccountName(review.authorId)}</span>
+                  <span className="review-card-date">{review.publicationDate}</span>
                 </div>
-                <Žvaigždutės įvertinimas={atsiliepimas.įvertinimas} />
-                <p className="review-card-text">{atsiliepimas.tekstas}</p>
+                <RatingStars rating={review.rating} />
+                <p className="review-card-text">{review.text}</p>
                 <div className="review-proto-actions review-proto-card-actions">
-                  <Link to={`/catalog/${dalis.id}/reviews/${atsiliepimas.id}/edit`} className="secondary-button">Redaguoti</Link>
-                  <Link to={`/catalog/${dalis.id}/reviews/${atsiliepimas.id}/delete`} className="secondary-button">Šalinti</Link>
+                  <Link to={`/catalog/${part.id}/reviews/${review.id}/edit`} className="secondary-button">
+                    Redaguoti
+                  </Link>
+                  <Link to={`/catalog/${part.id}/reviews/${review.id}/delete`} className="secondary-button">
+                    Šalinti
+                  </Link>
                 </div>
               </article>
             ))}
@@ -110,79 +114,88 @@ export function ReviewsPage() {
   )
 }
 
-// Ta pati formos išvaizda naudojama dviejuose atskiruose languose.
-function AtsiliepimoForma({ redagavimas }) {
+function ReviewForm({ isEditing }) {
   const { id, reviewId } = useParams()
   const navigate = useNavigate()
-  const dalis = gautiDalį(id)
-  const esamas = redagavimas
-    ? gautiPrototipoAtsiliepimus().find((r) => r.id === Number(reviewId) && r.dalisId === Number(id))
+  const part = getPart(id)
+  const existingReview = isEditing
+    ? getPrototypeReviews().find(
+        (review) => review.id === Number(reviewId) && review.partId === Number(id)
+      )
     : null
-  const [įvertinimas, setĮvertinimas] = useState(esamas?.įvertinimas ?? 5)
-  const [tekstas, setTekstas] = useState(esamas?.tekstas ?? '')
-  const [klaida, setKlaida] = useState('')
 
-  if (!dalis) return <LangasNerastas tekstas="Prekė nerasta." />
-  if (redagavimas && (!esamas || !['Aktyvus', 'Redaguotas'].includes(esamas.būsena))) {
-    return <LangasNerastas tekstas="Atsiliepimas nerastas arba neberodomas." />
+  const [rating, setRating] = useState(existingReview?.rating ?? 5)
+  const [text, setText] = useState(existingReview?.text ?? '')
+  const [error, setError] = useState('')
+
+  if (!part) return <NotFoundPage message="Prekė nerasta." />
+  if (isEditing && (!existingReview || !['Aktyvus', 'Redaguotas'].includes(existingReview.status))) {
+    return <NotFoundPage message="Atsiliepimas nerastas arba neberodomas." />
   }
 
-  function pateikti(event) {
+  function handleSubmit(event) {
     event.preventDefault()
-    if (!tekstas.trim()) {
-      setKlaida('Įrašykite atsiliepimo tekstą.')
+    if (!text.trim()) {
+      setError('Įrašykite atsiliepimo tekstą.')
       return
     }
 
-    const sąrašas = gautiPrototipoAtsiliepimus()
-    if (redagavimas) {
-      išsaugotiPrototipoAtsiliepimus(sąrašas.map((r) => r.id === esamas.id ? {
-        ...r,
-        tekstas: tekstas.trim(),
-        įvertinimas: Number(įvertinimas),
-        būsena: 'Redaguotas',
-        keitimoData: new Date().toISOString().slice(0, 10),
-      } : r))
+    const reviewList = getPrototypeReviews()
+
+    if (isEditing) {
+      savePrototypeReviews(reviewList.map((review) => review.id === existingReview.id ? {
+        ...review,
+        text: text.trim(),
+        rating: Number(rating),
+        status: 'Redaguotas',
+        modificationDate: new Date().toISOString().slice(0, 10),
+      } : review))
     } else {
-      const naujasId = Math.max(0, ...sąrašas.map((r) => r.id)) + 1
-      išsaugotiPrototipoAtsiliepimus([...sąrašas, {
-        id: naujasId,
-        dalisId: dalis.id,
-        autoriusId: DEMO_AUTORIAUS_ID,
-        tekstas: tekstas.trim(),
-        įvertinimas: Number(įvertinimas),
-        paskelbimoData: new Date().toISOString().slice(0, 10),
-        būsena: 'Aktyvus',
+      const newId = Math.max(0, ...reviewList.map((review) => review.id)) + 1
+      savePrototypeReviews([...reviewList, {
+        id: newId,
+        partId: part.id,
+        authorId: DEMO_AUTHOR_ID,
+        text: text.trim(),
+        rating: Number(rating),
+        publicationDate: new Date().toISOString().slice(0, 10),
+        status: 'Aktyvus',
       }])
     }
-    navigate(`/catalog/${dalis.id}/reviews`)
+
+    navigate(`/catalog/${part.id}/reviews`)
   }
 
   return (
     <section className="component-details-page">
-      <PuslapioAntraštė
-        dalis={dalis}
-        pavadinimas={redagavimas ? 'Atsiliepimo redagavimas' : 'Naujo atsiliepimo kūrimas'}
-        paaiškinimas={redagavimas ? 'Pakeiskite savo atsiliepimą' : 'Pasidalykite savo nuomone'}
+      <PageHeading
+        part={part}
+        title={isEditing ? 'Atsiliepimo redagavimas' : 'Naujo atsiliepimo kūrimas'}
+        description={isEditing ? 'Pakeiskite savo atsiliepimą' : 'Pasidalykite savo nuomone'}
       />
       <div className="component-info-card">
-        <form className="review-proto-form" onSubmit={pateikti}>
+        <form className="review-proto-form" onSubmit={handleSubmit}>
           <label htmlFor="review-rating">Įvertinimas</label>
-          <select id="review-rating" value={įvertinimas} onChange={(e) => setĮvertinimas(Number(e.target.value))}>
-            {[5, 4, 3, 2, 1].map((vertė) => <option value={vertė} key={vertė}>{vertė} iš 5</option>)}
+          <select id="review-rating" value={rating} onChange={(event) => setRating(Number(event.target.value))}>
+            {[5, 4, 3, 2, 1].map((value) => (
+              <option value={value} key={value}>{value} iš 5</option>
+            ))}
           </select>
           <label htmlFor="review-text">Atsiliepimas</label>
           <textarea
             id="review-text"
             rows={6}
             maxLength={1000}
-            value={tekstas}
-            onChange={(e) => { setTekstas(e.target.value); setKlaida('') }}
+            value={text}
+            onChange={(event) => {
+              setText(event.target.value)
+              setError('')
+            }}
             placeholder="Parašykite savo nuomonę apie prekę..."
           />
-          {klaida && <p role="alert" className="review-proto-error">{klaida}</p>}
+          {error && <p role="alert" className="review-proto-error">{error}</p>}
           <div className="review-proto-actions">
-            <Link to={`/catalog/${dalis.id}/reviews`} className="secondary-button">Atšaukti</Link>
+            <Link to={`/catalog/${part.id}/reviews`} className="secondary-button">Atšaukti</Link>
             <button type="submit" className="primary-button">Išsaugoti</button>
           </div>
         </form>
@@ -191,47 +204,52 @@ function AtsiliepimoForma({ redagavimas }) {
   )
 }
 
-// 2 langas: kūrimo forma.
 export function ReviewCreatePage() {
-  return <AtsiliepimoForma redagavimas={false} />
+  return <ReviewForm isEditing={false} />
 }
 
-// 3 langas: redagavimo forma.
 export function ReviewEditPage() {
-  return <AtsiliepimoForma redagavimas />
+  return <ReviewForm isEditing />
 }
 
-// 4 langas: atsiliepimo šalinimo patvirtinimas.
 export function ReviewDeletePage() {
   const { id, reviewId } = useParams()
   const navigate = useNavigate()
-  const dalis = gautiDalį(id)
-  const atsiliepimas = gautiPrototipoAtsiliepimus().find((r) => r.id === Number(reviewId) && r.dalisId === Number(id))
-  if (!dalis) return <LangasNerastas tekstas="Prekė nerasta." />
-  if (!atsiliepimas || !['Aktyvus', 'Redaguotas'].includes(atsiliepimas.būsena)) {
-    return <LangasNerastas tekstas="Atsiliepimas nerastas arba neberodomas." />
+  const part = getPart(id)
+  const review = getPrototypeReviews().find(
+    (item) => item.id === Number(reviewId) && item.partId === Number(id)
+  )
+
+  if (!part) return <NotFoundPage message="Prekė nerasta." />
+  if (!review || !['Aktyvus', 'Redaguotas'].includes(review.status)) {
+    return <NotFoundPage message="Atsiliepimas nerastas arba neberodomas." />
   }
 
-  function šalinti() {
-    išsaugotiPrototipoAtsiliepimus(gautiPrototipoAtsiliepimus().map((r) => r.id === atsiliepimas.id
-      ? { ...r, būsena: 'Trintas vartotojo' }
-      : r))
-    navigate(`/catalog/${dalis.id}/reviews`)
+  function deleteReview() {
+    savePrototypeReviews(getPrototypeReviews().map((item) =>
+      item.id === review.id
+        ? { ...item, status: 'Trintas vartotojo' }
+        : item
+    ))
+
+    navigate(`/catalog/${part.id}/reviews`)
   }
 
   return (
     <section className="component-details-page">
-      <PuslapioAntraštė dalis={dalis} pavadinimas="Atsiliepimo šalinimas" paaiškinimas="Patvirtinkite pasirinkimą" />
+      <PageHeading part={part} title="Atsiliepimo šalinimas" description="Patvirtinkite pasirinkimą" />
       <div className="component-info-card">
         <h2>Ar tikrai norite pašalinti atsiliepimą?</h2>
         <div className="review-card">
-          <Žvaigždutės įvertinimas={atsiliepimas.įvertinimas} />
-          <p className="review-card-text">{atsiliepimas.tekstas}</p>
+          <RatingStars rating={review.rating} />
+          <p className="review-card-text">{review.text}</p>
         </div>
         <p className="review-proto-note">Patvirtinus atsiliepimas nebebus matomas sąraše.</p>
         <div className="review-proto-actions">
-          <Link to={`/catalog/${dalis.id}/reviews`} className="secondary-button">Atšaukti</Link>
-          <button type="button" className="danger-button" onClick={šalinti}>Taip, šalinti</button>
+          <Link to={`/catalog/${part.id}/reviews`} className="secondary-button">Atšaukti</Link>
+          <button type="button" className="danger-button" onClick={deleteReview}>
+            Taip, šalinti
+          </button>
         </div>
       </div>
     </section>

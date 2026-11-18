@@ -1,21 +1,21 @@
 
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { formatEuro } from '../../data/mockData'
-import { gautiUžsakymą, atšauktiUžsakymą } from '../../data/mockOrder'
+import { getOrder, cancelOrder } from '../../data/mockOrder'
 
 function OrderCancelPage() {
   const { id } = useParams()
-  const order = gautiUžsakymą(id)
+  const order = getOrder(id)
   const navigate = useNavigate()
 
-  const galimaAtšaukti =
+  const canCancel =
     (order?.status === 'Nesumokėtas' || order?.status === 'Sumokėtas') &&
     !order?.deliveryDate
 
   function handleCancel() {
-    const atšaukta = atšauktiUžsakymą(id)
+    const cancelled = cancelOrder(id)
 
-    if (atšaukta) {
+    if (cancelled) {
       navigate(`/orders/${id}`)
     }
   }
@@ -47,7 +47,7 @@ function OrderCancelPage() {
             Atšaukus užsakymą, jo būsena bus pakeista į „Atšauktas“.
           </p>
 
-          {galimaAtšaukti ? (
+          {canCancel ? (
             <div className="order-cancel-actions">
               <Link to={`/orders/${order.id}`} className="secondary-button">
                 Grįžti į užsakymą

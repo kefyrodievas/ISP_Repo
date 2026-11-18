@@ -1,5 +1,6 @@
-import { useRef } from 'react';
-import Popup from 'reactjs-popup';
+
+import { useRef } from 'react'
+import Popup from 'reactjs-popup'
 
 const builds = [
     {
@@ -32,84 +33,90 @@ const builds = [
 ]
 
 function ConfigurationListPage() {
-    const ref = useRef();
-    
-    function HandleDelete(id) {
+    const popupRef = useRef()
+
+    function handleDelete(id) {
         alert('Komplektacijos ištrynimas bus galimas prijungus duomenų bazę.')
-        ref.current.close()
+        popupRef.current.close()
     }
-    
+
     return (
         <section className="orders-page">
             <div className="page-heading">
                 <h1>Komplektacijos</h1>
             </div>
-            
-            <a className="primary-button"
-               style={{margin: "15px"}}
-               href="/configurations/new/build"
-            >Kurti naują komplektaciją
+
+            <a
+                className="primary-button"
+                style={{ margin: "15px" }}
+                href="/configurations/new/build"
+            >
+                Kurti naują komplektaciją
             </a>
 
             <div className="orders-table-container">
-
                 <table className="orders-table">
                     <thead>
-                    <tr>
-                        <th>Komplektacija</th>
-                        <th>Pavadinimas</th>
-                        <th>Kompiuterio dalys</th>
-                        {/*<th>Kaina</th>*/}
-                        <th></th>
-                        <th></th>
-                    </tr>
+                        <tr>
+                            <th>Komplektacija</th>
+                            <th>Pavadinimas</th>
+                            <th>Kompiuterio dalys</th>
+                            {/*<th>Kaina</th>*/}
+                            <th></th>
+                            <th></th>
+                        </tr>
                     </thead>
 
                     <tbody>
-                    {builds.map((build) => (
-                        <tr key={build.id}>
-                            <td>{build.id}</td>
-                            <td>{build.title}</td>
-                            <td>
-                                <span className="order-components">
-                                    {build.parts.map(part => part.name).slice(0, 3).join(', ') + '...'}
-                                </span>
-                            </td>
-                            {/*<td>{*/}
-                            {/*    build.parts.reduce((accumulator, currentValue) => */}
-                            {/*        accumulator + (currentValue.price * currentValue.quantity * (1 - currentValue.discount * 0.01))*/}
-                            {/*            , 0).toFixed(2)*/}
-                            {/*    } €*/}
-                            {/*</td>*/}
-                            <td>
-                                <a
-                                    href={`/configurations/${build.id}/build`}
-                                    className="order-details-link"
-                                >
-                                    Peržiūrėti/Redaguoti
-                                </a>
-                            </td>
-                            <td>
-                                <button className="danger-button" onClick={() => HandleDelete(build.id)}>Ištrinti</button>
-                                {/* <Popup ref={ref} trigger={<button className="danger-button">Ištrinti</button>} position="bottom center">
-                                    <div className="cancel-popup">
-                                        <center>
-                                            <p>Ar tikrai norite ištrinti?</p>
-                                            <button className="danger-button"
-                                                    style={{margin: "5px"}} 
-                                                    onClick={() => HandleDelete(build.id)}>
-                                                Ištrinti
-                                            </button>
-                                            <button className="secondary-button"
-                                                    onClick={() => ref.current.close()}>
-                                                Atšaukti
-                                            </button>
-                                        </center>
-                                    </div>
-                                </Popup> */}
-                            </td>
-                        </tr>
-                    ))}
+                        {builds.map((build) => (
+                            <tr key={build.id}>
+                                <td>{build.id}</td>
+                                <td>{build.title}</td>
+                                <td>
+                                    <span className="order-components">
+                                        {build.parts.map(part => part.name).slice(0, 3).join(', ') + '...'}
+                                    </span>
+                                </td>
+                                {/*<td>{*/}
+                                {/*    build.parts.reduce((accumulator, currentValue) => */}
+                                {/*        accumulator + (currentValue.price * currentValue.quantity * (1 - currentValue.discount * 0.01))*/}
+                                {/*            , 0).toFixed(2)*/}
+                                {/*    } €*/}
+                                {/*</td>*/}
+                                <td>
+                                    <a
+                                        href={`/configurations/${build.id}/build`}
+                                        className="order-details-link"
+                                    >
+                                        Peržiūrėti/Redaguoti
+                                    </a>
+                                </td>
+                                <td>
+                                    <button
+                                        className="danger-button"
+                                        onClick={() => handleDelete(build.id)}
+                                    >
+                                        Ištrinti
+                                    </button>
+                                    {/* <Popup ref={popupRef} trigger={<button className="danger-button">Ištrinti</button>} position="bottom center">
+                                        <div className="cancel-popup">
+                                            <center>
+                                                <p>Ar tikrai norite ištrinti?</p>
+                                                <button className="danger-button"
+                                                        style={{margin: "5px"}} 
+                                                        onClick={() => handleDelete(build.id)}>
+                                                    Ištrinti
+                                                </button>
+                                                <button className="secondary-button"
+                                                        onClick={() => popupRef.current.close()}>
+                                                    Atšaukti
+                                                </button>
+                                            </center>
+                                        </div>
+                                    </Popup> */}
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             </div>
@@ -118,7 +125,6 @@ function ConfigurationListPage() {
                 Į pagrindinį puslapį
             </a>
         </section>
-        
     )
 }
 
