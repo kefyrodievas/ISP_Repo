@@ -3,37 +3,37 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { formatEuro } from '../../data/mockData'
 import {
-  gautiUžsakymus,
-  atnaujintiUžsakymusIšServerio,
+  getOrders,
+  updateOrdersFromServer,
 } from '../../data/mockOrder'
 
 function OrderListPage() {
   const [orders, setOrders] = useState(() =>
-    [...gautiUžsakymus()].sort(
+    [...getOrders()].sort(
       (a, b) => Number(b.id) - Number(a.id)
     )
   )
 
   useEffect(() => {
-    function atnaujintiSąrašą() {
+    function updateList() {
       setOrders(
-        [...gautiUžsakymus()].sort(
+        [...getOrders()].sort(
           (a, b) => Number(b.id) - Number(a.id)
         )
       )
     }
 
-    async function gautiAtnaujintusUžsakymus() {
-      await atnaujintiUžsakymusIšServerio()
-      atnaujintiSąrašą()
+    async function fetchUpdatedOrders() {
+      await updateOrdersFromServer()
+      updateList()
     }
 
-    window.addEventListener('orders-updated', atnaujintiSąrašą)
+    window.addEventListener('orders-updated', updateList)
 
-    gautiAtnaujintusUžsakymus()
+    fetchUpdatedOrders()
 
     return () => {
-      window.removeEventListener('orders-updated', atnaujintiSąrašą)
+      window.removeEventListener('orders-updated', updateList)
     }
   }, [])
 

@@ -22,14 +22,14 @@ while (true)
     Console.WriteLine("0. Išeiti");
     Console.Write("Pasirinkimas: ");
 
-    string? pasirinkimas = Console.ReadLine();
+    string? choice = Console.ReadLine();
 
-    if (pasirinkimas == "0")
+    if (choice == "0")
     {
         break;
     }
 
-    string? status = pasirinkimas switch
+    string? status = choice switch
     {
         "1" => "Delivered",
         "2" => "Cancelled",
@@ -65,7 +65,7 @@ while (true)
         Console.WriteLine("Siunčiamas pranešimas...");
 
         using HttpResponseMessage response =
-            await shippingService.SiųstiPranešimą(notification);
+            await shippingService.SendNotification(notification);
 
         Console.WriteLine(
             $"Galutinis URL: {response.RequestMessage?.RequestUri}"
