@@ -3,35 +3,35 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { formatEuro } from '../../data/mockData'
 import {
-  gautiUžsakymą,
-  atnaujintiUžsakymusIšServerio,
+  getOrder,
+  updateOrdersFromServer,
 } from '../../data/mockOrder'
 
 function OrderDetailsPage() {
   const { id } = useParams()
-  const [order, setOrder] = useState(() => gautiUžsakymą(id))
+  const [order, setOrder] = useState(() => getOrder(id))
 
   useEffect(() => {
-    function atnaujintiUžsakymą() {
-      setOrder(gautiUžsakymą(id))
+    function updateOrder() {
+      setOrder(getOrder(id))
     }
 
-    async function sinchronizuotiUžsakymą() {
-      await atnaujintiUžsakymusIšServerio()
-      atnaujintiUžsakymą()
+    async function syncOrder() {
+      await updateOrdersFromServer()
+      updateOrder()
     }
 
-    window.addEventListener('orders-updated', atnaujintiUžsakymą)
+    window.addEventListener('orders-updated', updateOrder)
 
-    sinchronizuotiUžsakymą()
+    syncOrder()
 
     const interval = window.setInterval(
-      sinchronizuotiUžsakymą,
+      syncOrder,
       3000
     )
 
     return () => {
-      window.removeEventListener('orders-updated', atnaujintiUžsakymą)
+      window.removeEventListener('orders-updated', updateOrder)
       window.clearInterval(interval)
     }
   }, [id])
@@ -58,7 +58,7 @@ function OrderDetailsPage() {
 
   const total = order.productSum - order.discount
 
-  const galimaAtšaukti =
+  const canCancel =
     (order.status === 'Nesumokėtas' || order.status === 'Sumokėtas') &&
     !order.deliveryDate
 
@@ -173,7 +173,7 @@ function OrderDetailsPage() {
               </Link>
             )}
 
-            {galimaAtšaukti && (
+            {canCancel && (
               <Link
                 to={`/orders/${order.id}/cancel`}
                 className="danger-button"
