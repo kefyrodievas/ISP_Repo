@@ -20,7 +20,7 @@ public class ShippingNotificationService
         this.apiKey = apiKey;
     }
 
-    public async Task<HttpResponseMessage> SiųstiPranešimą(
+    public async Task<HttpResponseMessage> SendMessage(
         ShippingStatusNotification notification)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);

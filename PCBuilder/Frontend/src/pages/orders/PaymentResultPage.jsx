@@ -2,18 +2,18 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
-  gautiUžsakymą,
-  atnaujintiUžsakymoBūseną,
+  getOrder,
+  updateOrderStatus,
 } from '../../data/mockOrder'
 
 function PaymentResultPage() {
   const { id } = useParams()
-  const [order, setOrder] = useState(() => gautiUžsakymą(id))
+  const [order, setOrder] = useState(() => getOrder(id))
 
   useEffect(() => {
     if (order && order.status === 'Nesumokėtas') {
-      atnaujintiUžsakymoBūseną(id, 'Sumokėtas')
-      setOrder(gautiUžsakymą(id))
+      updateOrderStatus(id, 'Sumokėtas')
+      setOrder(getOrder(id))
     }
   }, [id])
 

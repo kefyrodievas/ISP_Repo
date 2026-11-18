@@ -1,3 +1,4 @@
+
 import { useParams } from 'react-router-dom'
 import { useState } from 'react'
 
@@ -6,7 +7,7 @@ const builds = [
         id: 1,
         title: 'Žaidimų kompiuteris',
         description: 'Mano pirma komplektacija',
-        price_limit: 3000,
+        priceLimit: 3000,
         parts: [
             {
                 id: 1,
@@ -71,13 +72,14 @@ function ConfigurationBuilderPage() {
         if (id !== "new") {
             build.parts.map(part => total += +(part.price * part.quantity * (1 - part.discount * 0.01)).toFixed(2))
         }
-        const [title, setTitle] = id === "new" ? 
-            useState("") : useState(build.title);
-        const [description, setDescription] = id === "new" ? 
-            useState("") : useState(build.description);
+
+        const [title, setTitle] = id === "new" ?
+            useState("") : useState(build.title)
+        const [description, setDescription] = id === "new" ?
+            useState("") : useState(build.description)
         const [priceLimit, setPriceLimit] = id === "new" ?
-            useState(0) : useState(build.price_limit);
-        
+            useState(0) : useState(build.priceLimit)
+
         function HandleSave() {
             alert('Komplektacijos išsaugojimas bus galimas prijungus duomenų bazę.')
         }
@@ -119,13 +121,13 @@ function ConfigurationBuilderPage() {
             text.textContent = "Yra neišsaugotų pakeitimų";
             setPriceLimit(e.target.value)
         }
-        
+
         function checkCompatibility() {
-            var block = document.getElementById("compatibility-result-block");
-            var text = document.getElementById("compatibility-result-text");
-            text.textContent = "Visos kompiuterio dalys dera";
+            var block = document.getElementById("compatibility-result-block")
+            var text = document.getElementById("compatibility-result-text")
+            text.textContent = "Visos kompiuterio dalys dera"
             text.style.color = "green"
-            block.style.display = "block";
+            block.style.display = "block"
         }
 
         return (
@@ -135,9 +137,7 @@ function ConfigurationBuilderPage() {
                 </div>
 
                 <div className="orders-table-container">
-
                     <div className="order-details-empty">
-
                         <table className="orders-table">
                             <tbody>
                             <tr>
@@ -181,8 +181,8 @@ function ConfigurationBuilderPage() {
                         </table>
 
                         <h3>Kompiuterio dalys</h3>
-                        
-                        <table className="orders-table" style={{marginBottom: "0px"}}>
+
+                        <table className="orders-table" style={{ marginBottom: "0px" }}>
                             <thead>
                                 <tr>
                                     <th>Kompiuterio dalies pavadinimas</th>
@@ -196,7 +196,7 @@ function ConfigurationBuilderPage() {
                             <tbody>
                             {
                                 id !== "new" ? build.parts.map((part) => (
-                                <tr key={part.id} onClick={() => HandleRowClick(part.id)}>
+                                <tr key={part.id} onClick={() => handleRowClick(part.id)}>
                                     <td>{part.name}</td>
                                     <td>{part.quantity}</td>
                                     <td>{part.price} €</td>
@@ -222,22 +222,23 @@ function ConfigurationBuilderPage() {
                                     <td>Bendra kaina ir kainos limitas</td>
                                     {
                                         total > priceLimit ?
-                                        <td style={{color: "red"}}>{total} € / {priceLimit} €</td> : 
-                                        <td style={{color: "green"}}>{total} € / {priceLimit} €</td>
+                                            <td style={{ color: "red" }}>{total} € / {priceLimit} €</td> :
+                                            <td style={{ color: "green" }}>{total} € / {priceLimit} €</td>
                                     }
-                                    
                                 </tr>
                             </tbody>
                         </table>
 
-                        <button className="primary-button"
-                                style={{backgroundColor: "indigo"}}
-                                onClick={checkCompatibility}>
+                        <button
+                            className="primary-button"
+                            style={{ backgroundColor: "indigo" }}
+                            onClick={checkCompatibility}
+                        >
                             Patikrinti suderinamumą
                         </button>
 
-                        <div id="compatibility-result-block" style={{display: "none", marginTop: "15px"}}>
-                            <p id="compatibility-result-text"/>
+                        <div id="compatibility-result-block" style={{ display: "none", marginTop: "15px" }}>
+                            <p id="compatibility-result-text" />
                         </div>
 
                         <div id="changes_block" style={{marginTop: "25px"}}>
@@ -265,8 +266,6 @@ function ConfigurationBuilderPage() {
             </section>
         )
     }
-
-    
 }
 
 export default ConfigurationBuilderPage

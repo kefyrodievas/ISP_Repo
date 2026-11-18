@@ -1,43 +1,44 @@
+
 import { useState } from 'react'
-import { atsiliepimai, kompiuterioDalys, gautiPaskyrosVardą } from '../../data/mockData'
+import { reviews, computerParts, getAccountName } from '../../data/mockData'
 
-const PASLĖPTOS_BŪSENOS = ['Trintas vartotojo', 'Trintas administratoriaus']
+const HIDDEN_STATUSES = ['Deleted by User', 'Deleted by Admin']
 
-function dalisPavadinimas(dalisId) {
-  const dalis = kompiuterioDalys.find((d) => d.id === dalisId)
-  return dalis ? dalis.pavadinimas : 'Nežinoma dalis'
+function getPartName(partId) {
+  const part = computerParts.find((part) => part.id === partId)
+  return part ? part.name : 'Nežinoma dalis'
 }
 
-function SlėpimoModalas({ atsiliepimas, onPatvirtinti, onAtšaukti }) {
-  const [priežastis, setPriežastis] = useState('')
+function HideReviewModal({ review, onConfirm, onCancel }) {
+  const [reason, setReason] = useState('')
 
   return (
     <div className="modal-overlay">
       <div className="modal">
         <h2>Ar tikrai slėpti?</h2>
         <p>
-          „{atsiliepimas.tekstas}“ – komentaras bus pažymėtas kaip paslėptas ir nebematomas
+          „{review.text}“ – komentaras bus pažymėtas kaip paslėptas ir nebematomas
           kitiems naudotojams.
         </p>
 
         <div className="modal-field">
-          <label htmlFor="slėpimoPriežastis">Priežastis (neprivaloma)</label>
+          <label htmlFor="hideReason">Priežastis (neprivaloma)</label>
           <textarea
-            id="slėpimoPriežastis"
+            id="hideReason"
             rows={3}
-            value={priežastis}
-            onChange={(event) => setPriežastis(event.target.value)}
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
           />
         </div>
 
         <div className="modal-actions">
-          <button type="button" className="secondary-button" onClick={onAtšaukti}>
+          <button type="button" className="secondary-button" onClick={onCancel}>
             Atšaukti
           </button>
           <button
             type="button"
             className="danger-button"
-            onClick={() => onPatvirtinti(priežastis)}
+            onClick={() => onConfirm(reason)}
           >
             Slėpti
           </button>
@@ -48,24 +49,25 @@ function SlėpimoModalas({ atsiliepimas, onPatvirtinti, onAtšaukti }) {
 }
 
 function HideReviewPage() {
-  const [sąrašas, setSąrašas] = useState(atsiliepimai)
-  const [modalasAtsiliepimui, setModalasAtsiliepimui] = useState(null)
-  const [pranešimas, setPranešimas] = useState('')
+  const [reviewList, setReviewList] = useState(reviews)
+  const [selectedReview, setSelectedReview] = useState(null)
+  const [message, setMessage] = useState('')
 
-  function slėpti(atsiliepimoId, priežastis) {
-    setSąrašas((esami) =>
-      esami.map((atsiliepimas) =>
-        atsiliepimas.id === atsiliepimoId
+  function hideReview(reviewId, reason) {
+    setReviewList((existing) =>
+      existing.map((review) =>
+        review.id === reviewId
           ? {
-              ...atsiliepimas,
-              būsena: 'Trintas administratoriaus',
-              administratoriausPriežastis: priežastis || null,
+              ...review,
+              status: 'Deleted by Admin',
+              adminReason: reason || null,
             }
-          : atsiliepimas
+          : review
       )
     )
-    setModalasAtsiliepimui(null)
-    setPranešimas('Komentaras paslėptas')
+
+    setSelectedReview(null)
+    setMessage('Komentaras paslėptas')
   }
 
   return (
@@ -75,46 +77,49 @@ function HideReviewPage() {
         <p>Peržiūrėkite naudotojų atsiliepimus ir slėpkite netinkamą turinį.</p>
       </div>
 
-      {pranešimas && <div className="admin-success-banner">{pranešimas}</div>}
+      {message && <div className="admin-success-banner">{message}</div>}
 
       <div className="admin-table-container">
-        {sąrašas.map((atsiliepimas) => {
-          const paslėptas = PASLĖPTOS_BŪSENOS.includes(atsiliepimas.būsena)
+        {reviewList.map((review) => {
+          const isHidden = HIDDEN_STATUSES.includes(review.status)
 
           return (
             <div
-              key={atsiliepimas.id}
-              className={`review-row${paslėptas ? ' is-hidden' : ''}`}
+              key={review.id}
+              className={`review-row${isHidden ? ' is-hidden' : ''}`}
             >
               <div className="review-row-header">
-                <span className="review-row-part">{dalisPavadinimas(atsiliepimas.dalisId)}</span>
+                <span className="review-row-part">{getPartName(review.partId)}</span>
 
                 <div className="review-row-meta">
-                  <span>{gautiPaskyrosVardą(atsiliepimas.autoriusId)}</span>
-                  <span>{'★★★★★'.slice(0, atsiliepimas.įvertinimas)}{'☆☆☆☆☆'.slice(0, 5 - atsiliepimas.įvertinimas)}</span>
-                  <span>{atsiliepimas.paskelbimoData}</span>
-                  {paslėptas ? (
-                    <span className="status-badge status-badge-hidden">{atsiliepimas.būsena}</span>
+                  <span>{getAccountName(review.authorId)}</span>
+                  <span>
+                    {'★★★★★'.slice(0, review.rating)}
+                    {'☆☆☆☆☆'.slice(0, 5 - review.rating)}
+                  </span>
+                  <span>{review.publicationDate}</span>
+                  {isHidden ? (
+                    <span className="status-badge status-badge-hidden">{review.status}</span>
                   ) : (
-                    <span className="status-badge status-badge-active">{atsiliepimas.būsena}</span>
+                    <span className="status-badge status-badge-active">{review.status}</span>
                   )}
                 </div>
               </div>
 
-              <p className="review-row-text">{atsiliepimas.tekstas}</p>
+              <p className="review-row-text">{review.text}</p>
 
-              {atsiliepimas.administratoriausPriežastis && (
+              {review.adminReason && (
                 <p className="review-row-note">
-                  Administratoriaus pastaba: {atsiliepimas.administratoriausPriežastis}
+                  Administratoriaus pastaba: {review.adminReason}
                 </p>
               )}
 
-              {!paslėptas && (
+              {!isHidden && (
                 <div className="admin-table-actions">
                   <button
                     type="button"
                     className="admin-table-button admin-table-button-danger"
-                    onClick={() => setModalasAtsiliepimui(atsiliepimas)}
+                    onClick={() => setSelectedReview(review)}
                   >
                     Slėpti
                   </button>
@@ -124,16 +129,16 @@ function HideReviewPage() {
           )
         })}
 
-        {sąrašas.length === 0 && (
+        {reviewList.length === 0 && (
           <div className="admin-table-empty">Atsiliepimų kol kas nėra.</div>
         )}
       </div>
 
-      {modalasAtsiliepimui && (
-        <SlėpimoModalas
-          atsiliepimas={modalasAtsiliepimui}
-          onPatvirtinti={(priežastis) => slėpti(modalasAtsiliepimui.id, priežastis)}
-          onAtšaukti={() => setModalasAtsiliepimui(null)}
+      {selectedReview && (
+        <HideReviewModal
+          review={selectedReview}
+          onConfirm={(reason) => hideReview(selectedReview.id, reason)}
+          onCancel={() => setSelectedReview(null)}
         />
       )}
     </section>

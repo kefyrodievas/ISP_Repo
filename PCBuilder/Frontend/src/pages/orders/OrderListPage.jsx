@@ -2,38 +2,33 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { formatEuro } from '../../data/mockData'
-import {
-  gautiUžsakymus,
-  atnaujintiUžsakymusIšServerio,
-} from '../../data/mockOrder'
+import { getOrders, updateOrdersFromServer } from '../../data/mockOrder'
 
 function OrderListPage() {
   const [orders, setOrders] = useState(() =>
-    [...gautiUžsakymus()].sort(
-      (a, b) => Number(b.id) - Number(a.id)
-    )
+    [...getOrders()].sort((a, b) => Number(b.id) - Number(a.id))
   )
 
   useEffect(() => {
-    function atnaujintiSąrašą() {
-      setOrders(
-        [...gautiUžsakymus()].sort(
-          (a, b) => Number(b.id) - Number(a.id)
-        )
+    function updateList() {
+      const updatedOrders = getOrders().sort(
+        (a, b) => Number(b.id) - Number(a.id)
       )
+
+      setOrders(updatedOrders)
     }
 
-    async function gautiAtnaujintusUžsakymus() {
-      await atnaujintiUžsakymusIšServerio()
-      atnaujintiSąrašą()
+    async function fetchUpdatedOrders() {
+      await updateOrdersFromServer()
+      updateList()
     }
 
-    window.addEventListener('orders-updated', atnaujintiSąrašą)
+    window.addEventListener('orders-updated', updateList)
 
-    gautiAtnaujintusUžsakymus()
+    fetchUpdatedOrders()
 
     return () => {
-      window.removeEventListener('orders-updated', atnaujintiSąrašą)
+      window.removeEventListener('orders-updated', updateList)
     }
   }, [])
 
@@ -71,13 +66,9 @@ function OrderListPage() {
                 <td>{order.shipmentCode || '-'}</td>
                 <td>{formatEuro(order.productSum - order.discount)}</td>
                 <td>{formatEuro(order.discount)}</td>
-
                 <td>
-                  <span className="order-status">
-                    {order.status}
-                  </span>
+                  <span className="order-status">{order.status}</span>
                 </td>
-
                 <td>
                   <Link
                     to={`/orders/${order.id}`}

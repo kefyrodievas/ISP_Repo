@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react'
 import {
-  kompiuterioDalys,
+  computerParts,
   formatEuro,
-  gautiDabartinęKainą,
-  gautiAktyviąAkciją,
-  gautiNuotraukas,
-  gautiVidutinįĮvertinimą,
+  getCurrentPrice,
+  getActivePromotion,
+  getImages,
+  getAverageRating,
 } from '../../data/mockData'
 
-const kategorijos = [
+const categories = [
   'CPU',
   'GPU',
   'RAM',
@@ -19,62 +19,64 @@ const kategorijos = [
   'Kaupiklis',
 ]
 
-const gamintojai = Array.from(
-  new Set(kompiuterioDalys.map((dalis) => dalis.gamintojas))
+const manufacturers = Array.from(
+  new Set(computerParts.map((part) => part.manufacturer))
 ).sort((a, b) => a.localeCompare(b, 'lt'))
 
-const tuščiFiltrai = {
-  kategorija: '',
-  gamintojas: '',
-  kainaNuo: '',
-  kainaIki: '',
+const emptyFilters = {
+  category: '',
+  manufacturer: '',
+  priceFrom: '',
+  priceTo: '',
 }
 
-function RatingStars({ vidurkis }) {
-  const pilnos = Math.round(vidurkis)
+function RatingStars({ average }) {
+  const fullStars = Math.round(average)
 
   return (
     <>
-      {'★★★★★'.slice(0, pilnos)}
-      {'☆☆☆☆☆'.slice(0, 5 - pilnos)}
+      {'★★★★★'.slice(0, fullStars)}
+      {'☆☆☆☆☆'.slice(0, 5 - fullStars)}
     </>
   )
 }
 
-function DalisKortelė({ dalis }) {
-  const nuotrauka = gautiNuotraukas(dalis.id)[0]
-  const kaina = gautiDabartinęKainą(dalis.id)
-  const akcija = kaina !== null ? gautiAktyviąAkciją(dalis.id) : null
-  const { vidurkis, kiekis } = gautiVidutinįĮvertinimą(dalis.id)
-  const akcijosKaina = akcija ? kaina * (1 - akcija.procentai / 100) : null
+function PartCard({ part }) {
+  const image = getImages(part.id)[0]
+  const price = getCurrentPrice(part.id)
+  const promotion = price !== null ? getActivePromotion(part.id) : null
+  const { average, count } = getAverageRating(part.id)
+  const discountedPrice = promotion
+    ? price * (1 - promotion.percentage / 100)
+    : null
 
   return (
-    <a href={`/catalog/${dalis.id}`} className="catalog-card">
+    <a href={`/catalog/${part.id}`} className="catalog-card">
       <div className="catalog-card-image">
-        {nuotrauka && <img src={nuotrauka.url} alt={dalis.pavadinimas} />}
-        <span className="category-badge">{dalis.kategorija}</span>
-        {akcija && <span className="discount-badge">-{akcija.procentai}%</span>}
+        {image && <img src={image.url} alt={part.name} />}
+        <span className="category-badge">{part.category}</span>
+        {promotion && <span className="discount-badge">-{promotion.percentage}%</span>}
       </div>
 
       <div className="catalog-card-body">
-        <span className="catalog-card-manufacturer">{dalis.gamintojas}</span>
-        <h3 className="catalog-card-title">{dalis.pavadinimas}</h3>
+        <span className="catalog-card-manufacturer">{part.manufacturer}</span>
+        <h3 className="catalog-card-title">{part.name}</h3>
 
         <span className="rating-stars">
-          <RatingStars vidurkis={vidurkis} />
-          <span>{kiekis > 0 ? `(${kiekis})` : '(nėra atsiliepimų)'}</span>
+          <RatingStars average={average} />
+          <span>{count > 0 ? `(${count})` : '(nėra atsiliepimų)'}</span>
         </span>
 
         <div className="catalog-card-price">
-          {kaina === null ? (
+          {price === null ? (
             <span className="catalog-price-unavailable">Kaina nenurodyta</span>
-          ) : akcija ? (
+          ) : promotion ? (
             <>
-              <span className="catalog-price-old">{formatEuro(kaina)}</span>
-              <span className="catalog-price-new">{formatEuro(akcijosKaina)}</span>
+              <span className="catalog-price-old">{formatEuro(price)}</span>
+              <span className="catalog-price-new">{formatEuro(discountedPrice)}</span>
             </>
           ) : (
-            <span className="catalog-price">{formatEuro(kaina)}</span>
+            <span className="catalog-price">{formatEuro(price)}</span>
           )}
         </div>
       </div>
@@ -83,82 +85,82 @@ function DalisKortelė({ dalis }) {
 }
 
 function ComponentCatalogPage() {
-  const [filtrai, setFiltrai] = useState(tuščiFiltrai)
-  const [taikomiFiltrai, setTaikomiFiltrai] = useState(tuščiFiltrai)
-  const [rūšiavimas, setRūšiavimas] = useState('naujausi')
-  const [klaida, setKlaida] = useState('')
+  const [filters, setFilters] = useState(emptyFilters)
+  const [appliedFilters, setAppliedFilters] = useState(emptyFilters)
+  const [sorting, setSorting] = useState('newest')
+  const [error, setError] = useState('')
 
-  function taikytiFiltrus(event) {
+  function applyFilters(event) {
     event.preventDefault()
 
-    const nuo = filtrai.kainaNuo === '' ? null : Number(filtrai.kainaNuo)
-    const iki = filtrai.kainaIki === '' ? null : Number(filtrai.kainaIki)
+    const from = filters.priceFrom === '' ? null : Number(filters.priceFrom)
+    const to = filters.priceTo === '' ? null : Number(filters.priceTo)
 
-    if (nuo !== null && iki !== null && nuo > iki) {
-      setKlaida('Neteisingas kainų intervalas')
+    if (from !== null && to !== null && from > to) {
+      setError('Neteisingas kainų intervalas')
       return
     }
 
-    setKlaida('')
-    setTaikomiFiltrai(filtrai)
+    setError('')
+    setAppliedFilters(filters)
   }
 
-  function išvalytiFiltrus() {
-    setFiltrai(tuščiFiltrai)
-    setTaikomiFiltrai(tuščiFiltrai)
-    setKlaida('')
+  function clearFilters() {
+    setFilters(emptyFilters)
+    setAppliedFilters(emptyFilters)
+    setError('')
   }
 
-  const rastosDalys = useMemo(() => {
-    const nuo = taikomiFiltrai.kainaNuo === '' ? null : Number(taikomiFiltrai.kainaNuo)
-    const iki = taikomiFiltrai.kainaIki === '' ? null : Number(taikomiFiltrai.kainaIki)
+  const filteredParts = useMemo(() => {
+    const from = appliedFilters.priceFrom === '' ? null : Number(appliedFilters.priceFrom)
+    const to = appliedFilters.priceTo === '' ? null : Number(appliedFilters.priceTo)
 
-    const filtruotos = kompiuterioDalys.filter((dalis) => {
-      if (taikomiFiltrai.kategorija && dalis.kategorija !== taikomiFiltrai.kategorija) {
+    const filtered = computerParts.filter((part) => {
+      if (appliedFilters.category && part.category !== appliedFilters.category) {
         return false
       }
 
-      if (taikomiFiltrai.gamintojas && dalis.gamintojas !== taikomiFiltrai.gamintojas) {
+      if (appliedFilters.manufacturer && part.manufacturer !== appliedFilters.manufacturer) {
         return false
       }
 
-      const kaina = gautiDabartinęKainą(dalis.id)
+      const price = getCurrentPrice(part.id)
 
-      if (nuo !== null && (kaina === null || kaina < nuo)) {
+      if (from !== null && (price === null || price < from)) {
         return false
       }
 
-      if (iki !== null && (kaina === null || kaina > iki)) {
+      if (to !== null && (price === null || price > to)) {
         return false
       }
 
       return true
     })
 
-    const surūšiuotos = [...filtruotos]
+    const sorted = [...filtered]
 
-    surūšiuotos.sort((a, b) => {
-      if (rūšiavimas === 'kaina-asc') {
-        const kainaA = gautiDabartinęKainą(a.id) ?? Number.POSITIVE_INFINITY
-        const kainaB = gautiDabartinęKainą(b.id) ?? Number.POSITIVE_INFINITY
-        return kainaA - kainaB
+    sorted.sort((a, b) => {
+      if (sorting === 'price-asc') {
+        const priceA = getCurrentPrice(a.id) ?? Number.POSITIVE_INFINITY
+        const priceB = getCurrentPrice(b.id) ?? Number.POSITIVE_INFINITY
+        return priceA - priceB
       }
 
-      if (rūšiavimas === 'kaina-desc') {
-        const kainaA = gautiDabartinęKainą(a.id) ?? -1
-        const kainaB = gautiDabartinęKainą(b.id) ?? -1
-        return kainaB - kainaA
+      if (sorting === 'price-desc') {
+        const priceA = getCurrentPrice(a.id) ?? -1
+        const priceB = getCurrentPrice(b.id) ?? -1
+        return priceB - priceA
       }
 
-      if (rūšiavimas === 'reitingas') {
-        return gautiVidutinįĮvertinimą(b.id).vidurkis - gautiVidutinįĮvertinimą(a.id).vidurkis
+      if (sorting === 'rating') {
+        return getAverageRating(b.id).average - getAverageRating(a.id).average
       }
 
-      return b.paskelbimoData.localeCompare(a.paskelbimoData)
+      return b.publicationDate.localeCompare(a.publicationDate)
     })
 
-    return surūšiuotos
-  }, [taikomiFiltrai, rūšiavimas])
+    return sorted
+  }, [appliedFilters, sorting])
 
   return (
     <section className="catalog-page">
@@ -168,36 +170,36 @@ function ComponentCatalogPage() {
       </div>
 
       <div className="catalog-layout">
-        <form className="catalog-filters" onSubmit={taikytiFiltrus}>
+        <form className="catalog-filters" onSubmit={applyFilters}>
           <h2>Filtrai</h2>
 
           <div className="catalog-filter-group">
-            <label htmlFor="kategorija">Kategorija</label>
+            <label htmlFor="category">Kategorija</label>
             <select
-              id="kategorija"
-              value={filtrai.kategorija}
-              onChange={(event) => setFiltrai({ ...filtrai, kategorija: event.target.value })}
+              id="category"
+              value={filters.category}
+              onChange={(event) => setFilters({ ...filters, category: event.target.value })}
             >
               <option value="">Visos kategorijos</option>
-              {kategorijos.map((kategorija) => (
-                <option key={kategorija} value={kategorija}>
-                  {kategorija}
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
                 </option>
               ))}
             </select>
           </div>
 
           <div className="catalog-filter-group">
-            <label htmlFor="gamintojas">Gamintojas</label>
+            <label htmlFor="manufacturer">Gamintojas</label>
             <select
-              id="gamintojas"
-              value={filtrai.gamintojas}
-              onChange={(event) => setFiltrai({ ...filtrai, gamintojas: event.target.value })}
+              id="manufacturer"
+              value={filters.manufacturer}
+              onChange={(event) => setFilters({ ...filters, manufacturer: event.target.value })}
             >
               <option value="">Visi gamintojai</option>
-              {gamintojai.map((gamintojas) => (
-                <option key={gamintojas} value={gamintojas}>
-                  {gamintojas}
+              {manufacturers.map((manufacturer) => (
+                <option key={manufacturer} value={manufacturer}>
+                  {manufacturer}
                 </option>
               ))}
             </select>
@@ -210,16 +212,16 @@ function ComponentCatalogPage() {
                 type="number"
                 min="0"
                 placeholder="Nuo"
-                value={filtrai.kainaNuo}
-                onChange={(event) => setFiltrai({ ...filtrai, kainaNuo: event.target.value })}
+                value={filters.priceFrom}
+                onChange={(event) => setFilters({ ...filters, priceFrom: event.target.value })}
               />
               <span>–</span>
               <input
                 type="number"
                 min="0"
                 placeholder="Iki"
-                value={filtrai.kainaIki}
-                onChange={(event) => setFiltrai({ ...filtrai, kainaIki: event.target.value })}
+                value={filters.priceTo}
+                onChange={(event) => setFilters({ ...filters, priceTo: event.target.value })}
               />
             </div>
           </div>
@@ -228,7 +230,7 @@ function ComponentCatalogPage() {
             <button type="submit" className="primary-button">
               Taikyti
             </button>
-            <button type="button" className="secondary-button" onClick={išvalytiFiltrus}>
+            <button type="button" className="secondary-button" onClick={clearFilters}>
               Išvalyti
             </button>
           </div>
@@ -236,31 +238,31 @@ function ComponentCatalogPage() {
 
         <div>
           <div className="catalog-toolbar">
-            <span className="catalog-results-count">Rasta dalių: {rastosDalys.length}</span>
+            <span className="catalog-results-count">Rasta dalių: {filteredParts.length}</span>
 
             <div className="catalog-sort">
-              <label htmlFor="rūšiavimas">Rūšiuoti</label>
+              <label htmlFor="sorting">Rūšiuoti</label>
               <select
-                id="rūšiavimas"
-                value={rūšiavimas}
-                onChange={(event) => setRūšiavimas(event.target.value)}
+                id="sorting"
+                value={sorting}
+                onChange={(event) => setSorting(event.target.value)}
               >
-                <option value="naujausi">Naujausi</option>
-                <option value="kaina-asc">Kaina didėjančiai</option>
-                <option value="kaina-desc">Kaina mažėjančiai</option>
-                <option value="reitingas">Reitingas</option>
+                <option value="newest">Naujausi</option>
+                <option value="price-asc">Kaina didėjančiai</option>
+                <option value="price-desc">Kaina mažėjančiai</option>
+                <option value="rating">Reitingas</option>
               </select>
             </div>
           </div>
 
-          {klaida ? (
-            <div className="catalog-error">{klaida}</div>
-          ) : rastosDalys.length === 0 ? (
+          {error ? (
+            <div className="catalog-error">{error}</div>
+          ) : filteredParts.length === 0 ? (
             <div className="catalog-empty">Kompiuterio dalių nėra</div>
           ) : (
             <div className="catalog-grid">
-              {rastosDalys.map((dalis) => (
-                <DalisKortelė key={dalis.id} dalis={dalis} />
+              {filteredParts.map((part) => (
+                <PartCard key={part.id} part={part} />
               ))}
             </div>
           )}
