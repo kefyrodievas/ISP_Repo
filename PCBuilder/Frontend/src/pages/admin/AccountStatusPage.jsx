@@ -1,27 +1,26 @@
-
 import { useMemo, useState } from 'react'
-import { accounts, blocks } from '../../data/mockData'
+import { paskyros, blokavimai } from '../../data/mockData'
 
-function createAccount(account) {
-  const block = blocks.find((b) => b.accountId === account.id) || null
-  return { ...account, block }
+function sudarytiPaskyrą(paskyra) {
+  const blokavimas = blokavimai.find((b) => b.paskyrosId === paskyra.id) || null
+  return { ...paskyra, blokavimas }
 }
 
-function today() {
+function šiandien() {
   return new Date().toISOString().slice(0, 10)
 }
 
-function BlockAccountModal({ account, onConfirm, onCancel }) {
-  const [reason, setReason] = useState('')
-  const [endDate, setEndDate] = useState('')
-  const [notifyUser, setNotifyUser] = useState(true)
+function BlokavimoModalas({ paskyra, onPatvirtinti, onAtšaukti }) {
+  const [priežastis, setPriežastis] = useState('')
+  const [pabaigosData, setPabaigosData] = useState('')
+  const [informuoti, setInformuoti] = useState(true)
 
   function handleSubmit(event) {
     event.preventDefault()
-    onConfirm({
-      reason,
-      endDate: endDate || null,
-      notifyUser,
+    onPatvirtinti({
+      priežastis,
+      pabaigosData: pabaigosData || null,
+      informuoti,
     })
   }
 
@@ -30,44 +29,44 @@ function BlockAccountModal({ account, onConfirm, onCancel }) {
       <div className="modal">
         <h2>Užblokuoti paskyrą</h2>
         <p>
-          {account.firstName} {account.lastName} ({account.email})
+          {paskyra.vardas} {paskyra.pavardė} ({paskyra.elPaštas})
         </p>
 
         <form onSubmit={handleSubmit}>
           <div className="modal-field">
-            <label htmlFor="reason">Priežastis</label>
+            <label htmlFor="priežastis">Priežastis</label>
             <textarea
-              id="reason"
+              id="priežastis"
               rows={3}
               required
-              value={reason}
-              onChange={(event) => setReason(event.target.value)}
+              value={priežastis}
+              onChange={(event) => setPriežastis(event.target.value)}
             />
           </div>
 
           <div className="modal-field">
-            <label htmlFor="endDate">
+            <label htmlFor="pabaigosData">
               Blokavimo pabaigos data <span>(neprivaloma, neribotam laikui – palikti tuščią)</span>
             </label>
             <input
-              id="endDate"
+              id="pabaigosData"
               type="date"
-              value={endDate}
-              onChange={(event) => setEndDate(event.target.value)}
+              value={pabaigosData}
+              onChange={(event) => setPabaigosData(event.target.value)}
             />
           </div>
 
           <label className="modal-checkbox">
             <input
               type="checkbox"
-              checked={notifyUser}
-              onChange={(event) => setNotifyUser(event.target.checked)}
+              checked={informuoti}
+              onChange={(event) => setInformuoti(event.target.checked)}
             />
             Informuoti naudotoją el. paštu
           </label>
 
           <div className="modal-actions">
-            <button type="button" className="secondary-button" onClick={onCancel}>
+            <button type="button" className="secondary-button" onClick={onAtšaukti}>
               Atšaukti
             </button>
             <button type="submit" className="danger-button">
@@ -81,59 +80,51 @@ function BlockAccountModal({ account, onConfirm, onCancel }) {
 }
 
 function AccountStatusPage() {
-  const [accountList, setAccountList] = useState(() => accounts.map(createAccount))
-  const [search, setSearch] = useState('')
-  const [selectedAccount, setSelectedAccount] = useState(null)
-  const [message, setMessage] = useState('')
+  const [paskyrosSąrašas, setPaskyrosSąrašas] = useState(() => paskyros.map(sudarytiPaskyrą))
+  const [paieška, setPaieška] = useState('')
+  const [modalasPaskyrai, setModalasPaskyrai] = useState(null)
+  const [pranešimas, setPranešimas] = useState('')
 
-  const filteredAccounts = useMemo(() => {
-    const normalizedSearch = search.trim().toLocaleLowerCase('lt')
-
-    if (!normalizedSearch) {
-      return accountList
+  const filtruotos = useMemo(() => {
+    const paieškaMažom = paieška.trim().toLocaleLowerCase('lt')
+    if (!paieškaMažom) {
+      return paskyrosSąrašas
     }
 
-    return accountList.filter((account) => {
-      const fullName = `${account.firstName} ${account.lastName}`.toLocaleLowerCase('lt')
-      return (
-        fullName.includes(normalizedSearch) ||
-        account.email.toLocaleLowerCase('lt').includes(normalizedSearch)
-      )
+    return paskyrosSąrašas.filter((paskyra) => {
+      const vardas = `${paskyra.vardas} ${paskyra.pavardė}`.toLocaleLowerCase('lt')
+      return vardas.includes(paieškaMažom) || paskyra.elPaštas.toLocaleLowerCase('lt').includes(paieškaMažom)
     })
-  }, [accountList, search])
+  }, [paskyrosSąrašas, paieška])
 
-  function blockAccount(accountId, data) {
-    setAccountList((list) =>
-      list.map((account) =>
-        account.id === accountId
+  function užblokuoti(paskyrosId, duomenys) {
+    setPaskyrosSąrašas((sąrašas) =>
+      sąrašas.map((paskyra) =>
+        paskyra.id === paskyrosId
           ? {
-              ...account,
-              blocked: true,
-              block: {
-                accountId,
-                startDate: today(),
-                endDate: data.endDate,
-                reason: data.reason,
+              ...paskyra,
+              užblokuota: true,
+              blokavimas: {
+                paskyrosId,
+                pradžiosData: šiandien(),
+                pabaigosData: duomenys.pabaigosData,
+                priežastis: duomenys.priežastis,
               },
             }
-          : account
+          : paskyra
       )
     )
-
-    setSelectedAccount(null)
-    setMessage('Būsena pakeista')
+    setModalasPaskyrai(null)
+    setPranešimas('Būsena pakeista')
   }
 
-  function activateAccount(accountId) {
-    setAccountList((list) =>
-      list.map((account) =>
-        account.id === accountId
-          ? { ...account, blocked: false, block: null }
-          : account
+  function aktyvuoti(paskyrosId) {
+    setPaskyrosSąrašas((sąrašas) =>
+      sąrašas.map((paskyra) =>
+        paskyra.id === paskyrosId ? { ...paskyra, užblokuota: false, blokavimas: null } : paskyra
       )
     )
-
-    setMessage('Būsena pakeista')
+    setPranešimas('Būsena pakeista')
   }
 
   return (
@@ -143,15 +134,15 @@ function AccountStatusPage() {
         <p>Peržiūrėkite naudotojų paskyras ir keiskite jų būseną.</p>
       </div>
 
-      {message && <div className="admin-success-banner">{message}</div>}
+      {pranešimas && <div className="admin-success-banner">{pranešimas}</div>}
 
       <div className="admin-toolbar">
         <input
           type="text"
           className="admin-search"
           placeholder="Paieška pagal vardą arba el. paštą"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
+          value={paieška}
+          onChange={(event) => setPaieška(event.target.value)}
         />
       </div>
 
@@ -168,16 +159,16 @@ function AccountStatusPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredAccounts.map((account) => (
-              <tr key={account.id}>
+            {filtruotos.map((paskyra) => (
+              <tr key={paskyra.id}>
                 <td>
-                  {account.firstName} {account.lastName}
+                  {paskyra.vardas} {paskyra.pavardė}
                 </td>
-                <td>{account.email}</td>
-                <td>{account.role}</td>
-                <td>{account.registrationDate}</td>
+                <td>{paskyra.elPaštas}</td>
+                <td>{paskyra.rolė}</td>
+                <td>{paskyra.registracijosData}</td>
                 <td>
-                  {account.blocked ? (
+                  {paskyra.užblokuota ? (
                     <span className="status-badge status-badge-blocked">Užblokuota</span>
                   ) : (
                     <span className="status-badge status-badge-active">Aktyvi</span>
@@ -185,11 +176,11 @@ function AccountStatusPage() {
                 </td>
                 <td>
                   <div className="admin-table-actions">
-                    {account.blocked ? (
+                    {paskyra.užblokuota ? (
                       <button
                         type="button"
                         className="admin-table-button"
-                        onClick={() => activateAccount(account.id)}
+                        onClick={() => aktyvuoti(paskyra.id)}
                       >
                         Aktyvuoti
                       </button>
@@ -197,7 +188,7 @@ function AccountStatusPage() {
                       <button
                         type="button"
                         className="admin-table-button admin-table-button-danger"
-                        onClick={() => setSelectedAccount(account)}
+                        onClick={() => setModalasPaskyrai(paskyra)}
                       >
                         Užblokuoti
                       </button>
@@ -207,7 +198,7 @@ function AccountStatusPage() {
               </tr>
             ))}
 
-            {filteredAccounts.length === 0 && (
+            {filtruotos.length === 0 && (
               <tr>
                 <td colSpan={6} className="admin-table-empty">
                   Paskyrų pagal pasirinktus kriterijus nerasta.
@@ -218,11 +209,11 @@ function AccountStatusPage() {
         </table>
       </div>
 
-      {selectedAccount && (
-        <BlockAccountModal
-          account={selectedAccount}
-          onConfirm={(data) => blockAccount(selectedAccount.id, data)}
-          onCancel={() => setSelectedAccount(null)}
+      {modalasPaskyrai && (
+        <BlokavimoModalas
+          paskyra={modalasPaskyrai}
+          onPatvirtinti={(duomenys) => užblokuoti(modalasPaskyrai.id, duomenys)}
+          onAtšaukti={() => setModalasPaskyrai(null)}
         />
       )}
     </section>

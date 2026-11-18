@@ -1,56 +1,56 @@
 
-import { getCurrentPrice } from './mockData'
-import { getCart, removeCart } from './demoCart'
+import { gautiDabartinęKainą } from './mockData'
+import { gautiKrepšelį, pašalintiKrepšelį } from './demoCart'
 
-const STORAGE_KEY = 'pcbuilder-demo-orders'
+const RAKTAS = 'pcbuilder-demo-orders'
 const API_URL = 'http://localhost:5197/api/orders'
 
-function getCurrentDate() {
-  const date = new Date()
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
+function gautiDabartinęDatą() {
+  const data = new Date()
+  const metai = data.getFullYear()
+  const mėnuo = String(data.getMonth() + 1).padStart(2, '0')
+  const diena = String(data.getDate()).padStart(2, '0')
 
-  return `${year}-${month}-${day}`
+  return `${metai}-${mėnuo}-${diena}`
 }
 
-function createShipmentCode(id) {
+function sukurtiSiuntosKoda(id) {
   return `SHIP-${String(id).padStart(6, '0')}`
 }
 
-function saveOrders(orders) {
-  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(orders))
+function išsaugotiUžsakymus(užsakymai) {
+  sessionStorage.setItem(RAKTAS, JSON.stringify(užsakymai))
 
   fetch(`${API_URL}/sync`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(orders),
+    body: JSON.stringify(užsakymai),
   }).catch(() => {})
 }
 
-export async function updateOrdersFromServer() {
+export async function atnaujintiUžsakymusIšServerio() {
   try {
     const response = await fetch(API_URL)
 
     if (!response.ok) return false
 
-    const serverOrders = await response.json()
+    const serverioUžsakymai = await response.json()
 
-    if (!Array.isArray(serverOrders)) return false
+    if (!Array.isArray(serverioUžsakymai)) return false
 
-    if (serverOrders.length === 0) {
-      const localOrders = getOrders()
+    if (serverioUžsakymai.length === 0) {
+      const vietiniaiUžsakymai = gautiUžsakymus()
 
-      if (localOrders.length > 0) {
-        saveOrders(localOrders)
+      if (vietiniaiUžsakymai.length > 0) {
+        išsaugotiUžsakymus(vietiniaiUžsakymai)
       }
 
       return true
     }
 
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(serverOrders))
+    sessionStorage.setItem(RAKTAS, JSON.stringify(serverioUžsakymai))
 
     window.dispatchEvent(new Event('orders-updated'))
 
@@ -60,80 +60,80 @@ export async function updateOrdersFromServer() {
   }
 }
 
-export function getOrders() {
-  let orders
+export function gautiUžsakymus() {
+  let užsakymai
 
   try {
-    orders = JSON.parse(sessionStorage.getItem(STORAGE_KEY))
+    užsakymai = JSON.parse(sessionStorage.getItem(RAKTAS))
   } catch {
-    orders = null
+    užsakymai = null
   }
 
-  if (!Array.isArray(orders)) {
-    orders = []
-    saveOrders(orders)
+  if (!Array.isArray(užsakymai)) {
+    užsakymai = []
+    išsaugotiUžsakymus(užsakymai)
   } else {
-    orders = orders.filter(
-      (order) => order.id !== '0'
+    užsakymai = užsakymai.filter(
+      (užsakymas) => užsakymas.id !== '0'
     )
 
-    let changed = false
+    let pakeista = false
 
-    orders.forEach((order) => {
-      if (order.shipmentCode === undefined) {
-        order.shipmentCode = null
-        changed = true
+    užsakymai.forEach((užsakymas) => {
+      if (užsakymas.shipmentCode === undefined) {
+        užsakymas.shipmentCode = null
+        pakeista = true
       }
 
-      if (order.status === 'Sumokėtas' && !order.shipmentCode) {
-        order.shipmentCode = createShipmentCode(order.id)
-        changed = true
+      if (užsakymas.status === 'Sumokėtas' && !užsakymas.shipmentCode) {
+        užsakymas.shipmentCode = sukurtiSiuntosKoda(užsakymas.id)
+        pakeista = true
       }
     })
 
-    if (changed) {
-      saveOrders(orders)
+    if (pakeista) {
+      išsaugotiUžsakymus(užsakymai)
     }
   }
 
-  return orders
+  return užsakymai
 }
 
-export function getOrder(id) {
-  return getOrders().find(
-    (order) => order.id === String(id)
+export function gautiUžsakymą(id) {
+  return gautiUžsakymus().find(
+    (užsakymas) => užsakymas.id === String(id)
   ) || null
 }
 
-export function createOrder() {
-  const cart = getCart()
+export function sukurtiUžsakymą() {
+  const krepšelis = gautiKrepšelį()
 
-  if (!cart) return null
+  if (!krepšelis) return null
 
-  const orders = getOrders()
-  const part = cart.part
-  const currentPrice = getCurrentPrice(part.id)
+  const užsakymai = gautiUžsakymus()
+  const dalis = krepšelis.dalis
+  const dabartinėKaina = gautiDabartinęKainą(dalis.id)
 
-  if (currentPrice === null) return null
+  if (dabartinėKaina === null) return null
 
-  const productSum = currentPrice * cart.quantity
-  const discount = Math.max(0, productSum - cart.total)
+  const productSum = dabartinėKaina * krepšelis.kiekis
+  const discount = Math.max(0, productSum - krepšelis.suma)
 
-  const newOrder = {
+  const naujasUžsakymas = {
     id: String(
       Math.max(
         0,
-        ...orders.map((order) => Number(order.id) || 0)
+        ...užsakymai.map((užsakymas) => Number(užsakymas.id) || 0)
       ) + 1
     ),
-    creationDate: getCurrentDate(),
+    creationDate: gautiDabartinęDatą(),
     paymentDate: null,
     deliveryDate: null,
     shipmentCode: null,
     configurations: [],
     parts: [{
-      name: part.name,
-      quantity: cart.quantity,
+      name: dalis.pavadinimas,
+      quantity: krepšelis.kiekis,
     }],
     productSum,
     discount,
@@ -141,60 +141,60 @@ export function createOrder() {
     address: null,
   }
 
-  orders.push(newOrder)
-  saveOrders(orders)
-  removeCart()
+  užsakymai.push(naujasUžsakymas)
+  išsaugotiUžsakymus(užsakymai)
+  pašalintiKrepšelį()
 
-  return newOrder
+  return naujasUžsakymas
 }
 
-export function updateOrderAddress(id, address) {
-  const orders = getOrders()
-  const order = orders.find(
-    (entry) => entry.id === String(id)
+export function atnaujintiUžsakymoAdresą(id, adresas) {
+  const užsakymai = gautiUžsakymus()
+  const užsakymas = užsakymai.find(
+    (įrašas) => įrašas.id === String(id)
   )
 
-  if (!order || order.status !== 'Nesumokėtas') return false
+  if (!užsakymas || užsakymas.status !== 'Nesumokėtas') return false
 
-  order.address = { ...address }
-  saveOrders(orders)
+  užsakymas.address = { ...adresas }
+  išsaugotiUžsakymus(užsakymai)
 
   return true
 }
 
-export function updateOrderStatus(id, status) {
-  const orders = getOrders()
-  const order = orders.find(
-    (entry) => entry.id === String(id)
+export function atnaujintiUžsakymoBūseną(id, būsena) {
+  const užsakymai = gautiUžsakymus()
+  const užsakymas = užsakymai.find(
+    (įrašas) => įrašas.id === String(id)
   )
 
-  if (!order) return false
+  if (!užsakymas) return false
 
-  order.status = status
+  užsakymas.status = būsena
 
-  if (status === 'Sumokėtas') {
-    order.paymentDate = getCurrentDate()
+  if (būsena === 'Sumokėtas') {
+    užsakymas.paymentDate = gautiDabartinęDatą()
 
-    if (!order.shipmentCode) {
-      order.shipmentCode = createShipmentCode(order.id)
+    if (!užsakymas.shipmentCode) {
+      užsakymas.shipmentCode = sukurtiSiuntosKoda(užsakymas.id)
     }
   }
 
-  saveOrders(orders)
+  išsaugotiUžsakymus(užsakymai)
 
   return true
 }
 
-export function cancelOrder(id) {
-  const order = getOrder(id)
+export function atšauktiUžsakymą(id) {
+  const užsakymas = gautiUžsakymą(id)
 
   if (
-    !order ||
-    !['Nesumokėtas', 'Sumokėtas'].includes(order.status) ||
-    order.deliveryDate
+    !užsakymas ||
+    !['Nesumokėtas', 'Sumokėtas'].includes(užsakymas.status) ||
+    užsakymas.deliveryDate
   ) {
     return false
   }
 
-  return updateOrderStatus(id, 'Atšauktas')
+  return atnaujintiUžsakymoBūseną(id, 'Atšauktas')
 }

@@ -22,14 +22,14 @@ while (true)
     Console.WriteLine("0. Išeiti");
     Console.Write("Pasirinkimas: ");
 
-    string? choice = Console.ReadLine();
+    string? pasirinkimas = Console.ReadLine();
 
-    if (choice == "0")
+    if (pasirinkimas == "0")
     {
         break;
     }
 
-    string? status = choice switch
+    string? status = pasirinkimas switch
     {
         "1" => "Delivered",
         "2" => "Cancelled",

@@ -1,43 +1,31 @@
+import { kompiuterioDalys, gautiDabartinęKainą, gautiAktyviąAkciją } from './mockData'
 
-import { computerParts, getCurrentPrice, getActivePromotion } from './mockData'
+const RAKTAS = 'pcbuilder-demo-cart'
 
-const KEY = 'pcbuilder-demo-cart'
-
-export function saveCart(partId, quantity) {
-  sessionStorage.setItem(KEY, JSON.stringify({ partId, quantity }))
+export function išsaugotiKrepšelį(dalisId, kiekis) {
+  sessionStorage.setItem(RAKTAS, JSON.stringify({ dalisId, kiekis }))
 }
 
-export function removeCart() {
-  sessionStorage.removeItem(KEY)
+export function pašalintiKrepšelį() {
+  sessionStorage.removeItem(RAKTAS)
 }
 
-export function getCart() {
-  let entry
-
+export function gautiKrepšelį() {
+  let įrašas
   try {
-    entry = JSON.parse(sessionStorage.getItem(KEY))
+    įrašas = JSON.parse(sessionStorage.getItem(RAKTAS))
   } catch {
     return null
   }
 
-  const part = computerParts.find((item) => item.id === Number(entry?.partId))
-  const quantity = Number(entry?.quantity)
+  const dalis = kompiuterioDalys.find((d) => d.id === Number(įrašas?.dalisId))
+  const kiekis = Number(įrašas?.kiekis)
+  if (!dalis || !Number.isInteger(kiekis) || kiekis < 1 || kiekis > dalis.sandėlioKiekis) return null
 
-  if (!part || !Number.isInteger(quantity) || quantity < 1 || quantity > part.stockQuantity) {
-    return null
-  }
+  const kaina = gautiDabartinęKainą(dalis.id)
+  if (kaina === null) return null
 
-  const price = getCurrentPrice(part.id)
-
-  if (price === null) return null
-
-  const promotion = getActivePromotion(part.id)
-  const unitPrice = promotion ? price * (1 - promotion.percentage / 100) : price
-
-  return {
-    part,
-    quantity,
-    unitPrice,
-    total: unitPrice * quantity,
-  }
+  const akcija = gautiAktyviąAkciją(dalis.id)
+  const vienetoKaina = akcija ? kaina * (1 - akcija.procentai / 100) : kaina
+  return { dalis, kiekis, vienetoKaina, suma: vienetoKaina * kiekis }
 }

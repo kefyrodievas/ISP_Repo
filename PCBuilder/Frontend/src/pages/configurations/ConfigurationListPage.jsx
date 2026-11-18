@@ -1,6 +1,5 @@
-
-import { useRef } from 'react'
-import Popup from 'reactjs-popup'
+import { useRef } from 'react';
+import Popup from 'reactjs-popup';
 
 const builds = [
     {
@@ -39,32 +38,31 @@ function ConfigurationListPage() {
             alert('Komplektacijos ištrynimas bus galimas prijungus duomenų bazę.')
         }
     }
-
+    
     return (
         <section className="orders-page">
             <div className="page-heading">
                 <h1>Komplektacijos</h1>
             </div>
-
-            <a
-                className="primary-button"
-                style={{ margin: "15px" }}
-                href="/configurations/new/build"
-            >
-                Kurti naują komplektaciją
+            
+            <a className="primary-button"
+               style={{margin: "15px"}}
+               href="/configurations/new/build"
+            >Kurti naują komplektaciją
             </a>
 
             <div className="orders-table-container">
+
                 <table className="orders-table">
                     <thead>
-                        <tr>
-                            <th>Komplektacija</th>
-                            <th>Pavadinimas</th>
-                            <th>Kompiuterio dalys</th>
-                            {/*<th>Kaina</th>*/}
-                            <th></th>
-                            <th></th>
-                        </tr>
+                    <tr>
+                        <th>Komplektacija</th>
+                        <th>Pavadinimas</th>
+                        <th>Kompiuterio dalys</th>
+                        {/*<th>Kaina</th>*/}
+                        <th></th>
+                        <th></th>
+                    </tr>
                     </thead>
 
                     <tbody>
@@ -104,6 +102,7 @@ function ConfigurationListPage() {
                 Į pagrindinį puslapį
             </a>
         </section>
+        
     )
 }
 

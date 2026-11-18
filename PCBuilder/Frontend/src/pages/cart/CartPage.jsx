@@ -1,29 +1,39 @@
+
 import { useState } from 'react'
+
+// PAKEISTA: anksčiau buvo importuojamas tik Link.
+// Dabar papildomai importuojamas useNavigate, kad galėtume nukreipti po užsakymo sukūrimo.
 import { Link, useNavigate } from 'react-router-dom'
 
 import { formatEuro } from '../../data/mockData'
-import { getCart, removeCart } from '../../data/demoCart'
-import { createOrder } from '../../data/mockOrder'
+import { gautiKrepšelį, pašalintiKrepšelį } from '../../data/demoCart'
+
+// PRIDĖTA: funkcija užsakymui sukurti iš krepšelio.
+import { sukurtiUžsakymą } from '../../data/mockOrder'
 
 function CartPage() {
-  const [cart, setCart] = useState(getCart)
+  const [krepšelis, setKrepšelis] = useState(gautiKrepšelį)
+
+  // PRIDĖTA: navigacijos funkcija.
   const navigate = useNavigate()
 
-  function remove() {
-    removeCart()
-    setCart(null)
+  function pašalinti() {
+    pašalintiKrepšelį()
+    setKrepšelis(null)
   }
 
-  function proceedToPayment() {
-    const order = createOrder()
+  // PRIDĖTA: anksčiau šios funkcijos nebuvo.
+  // Sukuriamas užsakymas ir atidaromas jo apmokėjimo puslapis.
+  function pereitiPrieApmokėjimo() {
+    const užsakymas = sukurtiUžsakymą()
 
-    if (!order) return
+    if (!užsakymas) return
 
-    setCart(null)
-    navigate(`/orders/${order.id}/payment`)
+    setKrepšelis(null)
+    navigate(`/orders/${užsakymas.id}/payment`)
   }
 
-  if (!cart) {
+  if (!krepšelis) {
     return (
       <section className="cart-page">
         <div className="page-heading">
@@ -38,7 +48,7 @@ function CartPage() {
     )
   }
 
-  const { part, quantity, unitPrice, total } = cart
+  const { dalis, kiekis, vienetoKaina, suma } = krepšelis
 
   return (
     <section className="cart-page">
@@ -60,32 +70,26 @@ function CartPage() {
             </thead>
             <tbody>
               <tr>
-                <td>
-                  <Link to={`/catalog/${part.id}`} className="cart-product-link">
-                    {part.name}
-                  </Link>
-                </td>
-                <td>{quantity} vnt.</td>
-                <td>{formatEuro(unitPrice)}</td>
-                <td><strong>{formatEuro(total)}</strong></td>
-                <td>
-                  <button type="button" className="danger-button" onClick={remove}>
-                    Pašalinti
-                  </button>
-                </td>
+                <td><Link to={`/catalog/${dalis.id}`} className="cart-product-link">{dalis.pavadinimas}</Link></td>
+                <td>{kiekis} vnt.</td>
+                <td>{formatEuro(vienetoKaina)}</td>
+                <td><strong>{formatEuro(suma)}</strong></td>
+                <td><button type="button" className="danger-button" onClick={pašalinti}>Pašalinti</button></td>
               </tr>
             </tbody>
           </table>
         </div>
         <div className="cart-total">
           <span>Iš viso</span>
-          <strong>{formatEuro(total)}</strong>
+          <strong>{formatEuro(suma)}</strong>
         </div>
         <div className="cart-actions">
-          <Link to={`/catalog/${part.id}`} className="secondary-button">
-            Grįžti į prekę
-          </Link>
-          <button type="button" className="primary-button" onClick={proceedToPayment}>
+          <Link to={`/catalog/${dalis.id}`} className="secondary-button">Grįžti į prekę</Link>
+
+          {/* PAKEISTA:
+              Buvo: <Link to="/orders/cart/payment" className="primary-button">Pereiti prie apmokėjimo</Link>
+              Dabar: mygtukas pirmiausia sukuria užsakymą, tada nukreipia į jo apmokėjimą. */}
+          <button type="button" className="primary-button" onClick={pereitiPrieApmokėjimo}>
             Pereiti prie apmokėjimo
           </button>
         </div>

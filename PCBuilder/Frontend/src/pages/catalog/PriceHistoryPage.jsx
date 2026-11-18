@@ -1,56 +1,47 @@
-
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import {
-  computerParts,
-  promotions,
-  formatEuro,
-  getPriceHistory,
-} from '../../data/mockData'
+import { kompiuterioDalys, akcijos, formatEuro, gautiKainosIstoriją } from '../../data/mockData'
 
-const periods = [
-  { id: '1m', label: '1 mėn.', months: 1 },
-  { id: '3m', label: '3 mėn.', months: 3 },
-  { id: '6m', label: '6 mėn.', months: 6 },
-  { id: 'all', label: 'Visas', months: null },
+const laikotarpiai = [
+  { id: '1m', label: '1 mėn.', mėnesiai: 1 },
+  { id: '3m', label: '3 mėn.', mėnesiai: 3 },
+  { id: '6m', label: '6 mėn.', mėnesiai: 6 },
+  { id: 'visas', label: 'Visas', mėnesiai: null },
 ]
 
-const CHART_WIDTH = 760
-const CHART_HEIGHT = 300
-const MARGIN = { left: 70, right: 20, top: 20, bottom: 40 }
+const PLOTIS = 760
+const AUKŠTIS = 300
+const PARAŠTĖ = { kairė: 70, dešinė: 20, viršus: 20, apačia: 40 }
 
-function getDateDifferenceInDays(a, b) {
+function datosSkirtumasDienomis(a, b) {
   return (new Date(b) - new Date(a)) / (1000 * 60 * 60 * 24)
 }
 
 function PriceHistoryPage() {
   const { id } = useParams()
-  const part = computerParts.find((item) => item.id === Number(id))
-  const [period, setPeriod] = useState('all')
+  const dalis = kompiuterioDalys.find((d) => d.id === Number(id))
+  const [laikotarpis, setLaikotarpis] = useState('visas')
 
-  const fullHistory = useMemo(
-    () => (part ? getPriceHistory(part.id) : []),
-    [part]
-  )
+  const visaIstorija = useMemo(() => (dalis ? gautiKainosIstoriją(dalis.id) : []), [dalis])
 
-  const filteredHistory = useMemo(() => {
-    if (fullHistory.length <= 1) {
-      return fullHistory
+  const filtruotaIstorija = useMemo(() => {
+    if (visaIstorija.length <= 1) {
+      return visaIstorija
     }
 
-    const selectedPeriod = periods.find((item) => item.id === period)
-    if (!selectedPeriod || selectedPeriod.months === null) {
-      return fullHistory
+    const pasirinktas = laikotarpiai.find((l) => l.id === laikotarpis)
+    if (!pasirinktas || pasirinktas.mėnesiai === null) {
+      return visaIstorija
     }
 
-    const latestDate = new Date(fullHistory[fullHistory.length - 1].recordedDate)
-    const limit = new Date(latestDate)
-    limit.setMonth(limit.getMonth() - selectedPeriod.months)
+    const paskutinė = new Date(visaIstorija[visaIstorija.length - 1].nustatymoData)
+    const riba = new Date(paskutinė)
+    riba.setMonth(riba.getMonth() - pasirinktas.mėnesiai)
 
-    return fullHistory.filter((entry) => new Date(entry.recordedDate) >= limit)
-  }, [fullHistory, period])
+    return visaIstorija.filter((įrašas) => new Date(įrašas.nustatymoData) >= riba)
+  }, [visaIstorija, laikotarpis])
 
-  if (!part) {
+  if (!dalis) {
     return (
       <section className="price-history-page">
         <div className="page-heading">
@@ -69,11 +60,9 @@ function PriceHistoryPage() {
     )
   }
 
-  const partPromotions = promotions.filter((promotion) =>
-    promotion.partIds.includes(part.id)
-  )
+  const akcijosDaliai = akcijos.filter((akcija) => akcija.dalysIds.includes(dalis.id))
 
-  function renderTable(history) {
+  function renderLentelė(istorija) {
     return (
       <table className="orders-table">
         <thead>
@@ -84,23 +73,23 @@ function PriceHistoryPage() {
           </tr>
         </thead>
         <tbody>
-          {history.map((entry, index) => {
-            const previous = index > 0 ? history[index - 1].price : null
-            const change = previous !== null ? entry.price - previous : null
+          {istorija.map((įrašas, index) => {
+            const ankstesnis = index > 0 ? istorija[index - 1].kaina : null
+            const pokytis = ankstesnis !== null ? įrašas.kaina - ankstesnis : null
 
             return (
-              <tr key={entry.recordedDate}>
-                <td>{entry.recordedDate}</td>
-                <td>{formatEuro(entry.price)}</td>
+              <tr key={įrašas.nustatymoData}>
+                <td>{įrašas.nustatymoData}</td>
+                <td>{formatEuro(įrašas.kaina)}</td>
                 <td>
-                  {change === null ? (
+                  {pokytis === null ? (
                     <span className="price-history-change-none">Pirminė kaina</span>
-                  ) : change === 0 ? (
+                  ) : pokytis === 0 ? (
                     <span className="price-history-change-none">Nepakito</span>
-                  ) : change > 0 ? (
-                    <span className="price-history-change-up">+{formatEuro(change)}</span>
+                  ) : pokytis > 0 ? (
+                    <span className="price-history-change-up">+{formatEuro(pokytis)}</span>
                   ) : (
-                    <span className="price-history-change-down">{formatEuro(change)}</span>
+                    <span className="price-history-change-down">{formatEuro(pokytis)}</span>
                   )}
                 </td>
               </tr>
@@ -111,19 +100,19 @@ function PriceHistoryPage() {
     )
   }
 
-  function renderContent() {
-    if (fullHistory.length === 0) {
+  function renderTurinys() {
+    if (visaIstorija.length === 0) {
       return <div className="price-history-empty"><h2>Kainų istorijos nėra</h2></div>
     }
 
-    if (fullHistory.length === 1) {
+    if (visaIstorija.length === 1) {
       return (
         <>
           <div className="price-history-empty">
             <h2>Kaina nesikeitė</h2>
             <p>Šiai daliai užregistruota tik viena kaina.</p>
           </div>
-          {renderTable(fullHistory)}
+          {renderLentelė(visaIstorija)}
         </>
       )
     }
@@ -131,26 +120,26 @@ function PriceHistoryPage() {
     return (
       <>
         <div className="price-history-controls">
-          {periods.map((item) => (
+          {laikotarpiai.map((l) => (
             <button
-              key={item.id}
+              key={l.id}
               type="button"
-              className={`price-history-period-button${period === item.id ? ' is-active' : ''}`}
-              onClick={() => setPeriod(item.id)}
+              className={`price-history-period-button${laikotarpis === l.id ? ' is-active' : ''}`}
+              onClick={() => setLaikotarpis(l.id)}
             >
-              {item.label}
+              {l.label}
             </button>
           ))}
         </div>
 
-        {filteredHistory.length <= 1 ? (
+        {filtruotaIstorija.length <= 1 ? (
           <div className="price-history-empty">
             <h2>Pasirinktu laikotarpiu kaina nesikeitė</h2>
             <p>Pasirinkite platesnį laikotarpį, kad pamatytumėte daugiau duomenų.</p>
           </div>
         ) : (
           <div className="price-history-chart-container">
-            <PriceChart history={filteredHistory} promotions={partPromotions} />
+            <Grafikas istorija={filtruotaIstorija} akcijos={akcijosDaliai} />
 
             <div className="price-history-legend">
               <span className="price-history-legend-swatch" />
@@ -159,7 +148,7 @@ function PriceHistoryPage() {
           </div>
         )}
 
-        {renderTable(filteredHistory)}
+        {renderLentelė(filtruotaIstorija)}
       </>
     )
   }
@@ -168,13 +157,13 @@ function PriceHistoryPage() {
     <section className="price-history-page">
       <div className="page-heading">
         <h1>Kainų istorija</h1>
-        <p>{part.name} – kainos pokyčiai laikui bėgant.</p>
+        <p>{dalis.pavadinimas} – kainos pokyčiai laikui bėgant.</p>
       </div>
 
-      {renderContent()}
+      {renderTurinys()}
 
       <div className="price-history-actions">
-        <a href={`/catalog/${part.id}`} className="secondary-button">
+        <a href={`/catalog/${dalis.id}`} className="secondary-button">
           Grįžti į dalies informaciją
         </a>
         <a href="/catalog" className="secondary-button">
@@ -185,114 +174,112 @@ function PriceHistoryPage() {
   )
 }
 
-function PriceChart({ history, promotions }) {
-  const dates = history.map((entry) => new Date(entry.recordedDate))
-  const prices = history.map((entry) => entry.price)
+function Grafikas({ istorija, akcijos }) {
+  const datos = istorija.map((įrašas) => new Date(įrašas.nustatymoData))
+  const kainos = istorija.map((įrašas) => įrašas.kaina)
 
-  const minDate = dates[0]
-  const maxDate = dates[dates.length - 1]
-  const minPrice = Math.min(...prices)
-  const maxPrice = Math.max(...prices)
+  const minData = datos[0]
+  const maxData = datos[datos.length - 1]
+  const minKaina = Math.min(...kainos)
+  const maxKaina = Math.max(...kainos)
 
-  const chartWidth = CHART_WIDTH - MARGIN.left - MARGIN.right
-  const chartHeight = CHART_HEIGHT - MARGIN.top - MARGIN.bottom
-  const dateRangeInDays = Math.max(getDateDifferenceInDays(minDate, maxDate), 1)
-  const priceRange = Math.max(maxPrice - minPrice, 1)
+  const plotoPlotis = PLOTIS - PARAŠTĖ.kairė - PARAŠTĖ.dešinė
+  const plotoAukštis = AUKŠTIS - PARAŠTĖ.viršus - PARAŠTĖ.apačia
+  const diapazonasDienomis = Math.max(datosSkirtumasDienomis(minData, maxData), 1)
+  const kainųDiapazonas = Math.max(maxKaina - minKaina, 1)
 
-  function getX(date) {
-    return MARGIN.left +
-      (getDateDifferenceInDays(minDate, date) / dateRangeInDays) * chartWidth
+  function x(data) {
+    return PARAŠTĖ.kairė + (datosSkirtumasDienomis(minData, data) / diapazonasDienomis) * plotoPlotis
   }
 
-  function getY(price) {
-    return MARGIN.top + chartHeight -
-      ((price - minPrice) / priceRange) * chartHeight
+  function y(kaina) {
+    return PARAŠTĖ.viršus + plotoAukštis - ((kaina - minKaina) / kainųDiapazonas) * plotoAukštis
   }
 
-  const points = history.map((entry) => ({
-    x: getX(new Date(entry.recordedDate)),
-    y: getY(entry.price),
-    entry,
+  const taškai = istorija.map((įrašas) => ({
+    x: x(new Date(įrašas.nustatymoData)),
+    y: y(įrašas.kaina),
+    įrašas,
   }))
 
-  const line = points.map((point) => `${point.x},${point.y}`).join(' ')
+  const linija = taškai.map((taškas) => `${taškas.x},${taškas.y}`).join(' ')
 
-  const promotionBands = promotions
-    .map((promotion) => {
-      const start = new Date(promotion.startDate)
-      const end = new Date(promotion.endDate)
+  const juostos = akcijos
+    .map((akcija) => {
+      const pradžia = new Date(akcija.pradžiosData)
+      const pabaiga = new Date(akcija.pabaigosData)
 
-      if (end < minDate || start > maxDate) {
+      if (pabaiga < minData || pradžia > maxData) {
         return null
       }
 
-      const from = start < minDate ? minDate : start
-      const to = end > maxDate ? maxDate : end
+      const nuo = pradžia < minData ? minData : pradžia
+      const iki = pabaiga > maxData ? maxData : pabaiga
 
       return {
-        id: promotion.id,
-        x1: getX(from),
-        x2: getX(to),
-        percentage: promotion.percentage,
+        id: akcija.id,
+        x1: x(nuo),
+        x2: x(iki),
+        procentai: akcija.procentai,
       }
     })
     .filter(Boolean)
 
   return (
-    <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}>
-      {promotionBands.map((band) => (
+    <svg viewBox={`0 0 ${PLOTIS} ${AUKŠTIS}`}>
+      {juostos.map((juosta) => (
         <rect
-          key={band.id}
+          key={juosta.id}
           className="price-history-promo-band"
-          x={Math.min(band.x1, band.x2)}
-          y={MARGIN.top}
-          width={Math.max(Math.abs(band.x2 - band.x1), 2)}
-          height={chartHeight}
+          x={Math.min(juosta.x1, juosta.x2)}
+          y={PARAŠTĖ.viršus}
+          width={Math.max(Math.abs(juosta.x2 - juosta.x1), 2)}
+          height={plotoAukštis}
         />
       ))}
 
       <line
         className="price-history-axis"
-        x1={MARGIN.left}
-        y1={MARGIN.top}
-        x2={MARGIN.left}
-        y2={CHART_HEIGHT - MARGIN.bottom}
+        x1={PARAŠTĖ.kairė}
+        y1={PARAŠTĖ.viršus}
+        x2={PARAŠTĖ.kairė}
+        y2={AUKŠTIS - PARAŠTĖ.apačia}
       />
       <line
         className="price-history-axis"
-        x1={MARGIN.left}
-        y1={CHART_HEIGHT - MARGIN.bottom}
-        x2={CHART_WIDTH - MARGIN.right}
-        y2={CHART_HEIGHT - MARGIN.bottom}
+        x1={PARAŠTĖ.kairė}
+        y1={AUKŠTIS - PARAŠTĖ.apačia}
+        x2={PLOTIS - PARAŠTĖ.dešinė}
+        y2={AUKŠTIS - PARAŠTĖ.apačia}
       />
 
-      <text className="price-history-axis-label" x={8} y={getY(maxPrice) + 4}>
-        {formatEuro(maxPrice)}
+      <text className="price-history-axis-label" x={8} y={y(maxKaina) + 4}>
+        {formatEuro(maxKaina)}
       </text>
-      <text className="price-history-axis-label" x={8} y={getY(minPrice) + 4}>
-        {formatEuro(minPrice)}
+      <text className="price-history-axis-label" x={8} y={y(minKaina) + 4}>
+        {formatEuro(minKaina)}
       </text>
 
-      {points.map((point, index) => (
+      {taškai.map((taškas, index) => (
         <text
-          key={`label-${point.entry.recordedDate}`}
+          key={`label-${taškas.įrašas.nustatymoData}`}
           className="price-history-axis-label"
-          x={point.x}
-          y={CHART_HEIGHT - MARGIN.bottom + 18}
-          textAnchor={index === 0 ? 'start' : index === points.length - 1 ? 'end' : 'middle'}
+          x={taškas.x}
+          y={AUKŠTIS - PARAŠTĖ.apačia + 18}
+          textAnchor={index === 0 ? 'start' : index === taškai.length - 1 ? 'end' : 'middle'}
         >
-          {point.entry.recordedDate}
+          {taškas.įrašas.nustatymoData}
         </text>
       ))}
 
-      <polyline className="price-history-line" points={line} />
+      <polyline className="price-history-line" points={linija} />
 
-      {points.map((point) => (
+      {taškai.map((taškas) => (
         <circle
-          key={point.entry.recordedDate}
+          key={taškas.įrašas.nustatymoData}
           className="price-history-point"
-          cx={point.x}
-          cy={point.y}
+          cx={taškas.x}
+          cy={taškas.y}
           r={4.5}
         />
       ))}
