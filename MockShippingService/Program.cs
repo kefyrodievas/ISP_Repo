@@ -65,7 +65,7 @@ while (true)
         Console.WriteLine("Siunčiamas pranešimas...");
 
         using HttpResponseMessage response =
-            await shippingService.SendMessage(notification);
+            await shippingService.SiųstiPranešimą(notification);
 
         Console.WriteLine(
             $"Galutinis URL: {response.RequestMessage?.RequestUri}"

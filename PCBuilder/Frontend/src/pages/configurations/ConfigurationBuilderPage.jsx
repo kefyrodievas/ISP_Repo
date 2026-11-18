@@ -34,6 +34,12 @@ const builds = [
     }
 ]
 
+// function HandleDelete(id) {
+//     alert('Komplektacijos ištrynimas bus galimas prijungus duomenų bazę.')
+//     ref.current.close()
+// }
+
+
 function ConfigurationBuilderPage() {
     const { id } = useParams()
     const build = builds.find((build) => build.id.toString() === id)
@@ -74,12 +80,46 @@ function ConfigurationBuilderPage() {
         const [priceLimit, setPriceLimit] = id === "new" ?
             useState(0) : useState(build.priceLimit)
 
-        function handleSave() {
+        function HandleSave() {
             alert('Komplektacijos išsaugojimas bus galimas prijungus duomenų bazę.')
         }
 
-        function handleRowClick(id) {
-            location.replace("/components/" + id)
+        let tr_flag;
+        tr_flag = 0;
+        
+        function HandleRowClick(_this){
+            if (tr_flag === 0){
+                location.replace("/catalog/" + id)
+            }
+        }
+
+        function HandleDelete(id){
+            tr_flag = 1;
+            setTimeout(reset, 1000);
+            alert('Kompiuterio dalies ištrynimas bus galimas prijungus duomenų bazę.')
+            
+        }
+        
+        function reset(){
+            tr_flag=0;
+        }
+        
+        function changeTitle(e) {
+            var text = document.getElementById("changes-text");
+            text.textContent = "Yra neišsaugotų pakeitimų";
+            setTitle(e.target.value)
+        }
+        
+        function changeDescription(e) {
+            var text = document.getElementById("changes-text");
+            text.textContent = "Yra neišsaugotų pakeitimų";
+            setDescription(e.target.value)
+        }
+        
+        function changePriceLimit(e) {
+            var text = document.getElementById("changes-text");
+            text.textContent = "Yra neišsaugotų pakeitimų";
+            setPriceLimit(e.target.value)
         }
 
         function checkCompatibility() {
@@ -100,42 +140,43 @@ function ConfigurationBuilderPage() {
                     <div className="order-details-empty">
                         <table className="orders-table">
                             <tbody>
-                                <tr>
-                                    <td>Pavadinimas</td>
-                                    <td>
-                                        <div className="payment-field">
-                                            <input
-                                                type="text"
-                                                value={title}
-                                                onChange={(e) => setTitle(e.target.value)}
-                                            />
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Aprašymas</td>
-                                    <td>
-                                        <div className="payment-field">
-                                            <textarea
-                                                value={description}
-                                                style={{ height: "50px", border: "1px solid lightgray", borderRadius: "7px", fontSize: "14px" }}
-                                                onChange={(e) => setDescription(e.target.value)}
-                                            />
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Kainos limitas</td>
-                                    <td>
-                                        <div className="payment-field" style={{ width: "50%" }}>
-                                            <input
-                                                type="number"
-                                                value={priceLimit}
-                                                onChange={(e) => setPriceLimit(e.target.value)}
-                                            />
-                                        </div>
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td>Pavadinimas</td>
+                                <td>
+                                    <div className="payment-field">
+                                        <input
+                                            type="text"
+                                            value={title}
+                                            onChange={(e) => changeTitle(e)}
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Aprašymas</td>
+                                <td>
+                                    <div className="payment-field">
+                                        <textarea
+                                            value={description}
+                                            style={{height: "50px", border: "1px solid lightgray", borderRadius: "7px", fontSize: "14px"}}
+                                            onChange={(e) => changeDescription(e)}
+                                        />
+                                    </div>
+
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Kainos limitas</td>
+                                <td>
+                                    <div className="payment-field" style={{width: "50%"}}>
+                                        <input
+                                            type="number"
+                                            value={priceLimit}
+                                            onChange={(e) => changePriceLimit(e)}
+                                        />
+                                    </div>
+                                </td>
+                            </tr>
                             </tbody>
                         </table>
 
@@ -149,27 +190,28 @@ function ConfigurationBuilderPage() {
                                     <th>Kaina</th>
                                     <th>Nuolaida</th>
                                     <th>Kaina po nuolaidos</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {
-                                    id !== "new" ? build.parts.map((part) => (
-                                        <tr key={part.id} onClick={() => handleRowClick(part.id)}>
-                                            <td>{part.name}</td>
-                                            <td>{part.quantity}</td>
-                                            <td>{part.price} €</td>
-                                            <td style={{ fontWeight: "normal", fontSize: "13px", color: "#465267" }}>{part.discount} %</td>
-                                            <td>{+(part.price - part.price * part.discount * 0.01).toFixed(2)}</td>
-                                        </tr>
-                                    )) : null
-                                }
+                            {
+                                id !== "new" ? build.parts.map((part) => (
+                                <tr key={part.id} onClick={() => handleRowClick(part.id)}>
+                                    <td>{part.name}</td>
+                                    <td>{part.quantity}</td>
+                                    <td>{part.price} €</td>
+                                    <td style={{fontWeight: "normal", fontSize: "13px", color: "#465267"}}>{part.discount} %</td>
+                                    <td>{+(part.price - part.price * part.discount * 0.01).toFixed(2)} €</td>
+                                    <td style={{padding: "7px"}}><button className="order-details-link" onClick={() => HandleDelete(build.id)}>Ištrinti</button></td>
+                                </tr>
+                                )) : null
+                            }
                             </tbody>
                         </table>
 
-                        <a
-                            className="primary-button"
-                            style={{ marginBottom: "30px", marginLeft: "20px", marginTop: "10px" }}
-                            href="/components"
+                        <a className="primary-button"
+                                style={{marginBottom: "30px", marginLeft: "20px", marginTop: "10px"}}
+                                href="/catalog"
                         >
                             Pridėti
                         </a>
@@ -199,8 +241,13 @@ function ConfigurationBuilderPage() {
                             <p id="compatibility-result-text" />
                         </div>
 
-                        <div style={{ marginTop: "45px", marginBottom: "20px" }}>
-                            <button className="primary-button" onClick={handleSave}>
+                        <div id="changes_block" style={{marginTop: "25px"}}>
+                            <p id="changes-text"/>
+                        </div>
+                        
+                        <div style={{marginTop: "45px", marginBottom: "20px"}}>
+                            <button className="primary-button"
+                            onClick={HandleSave}>
                                 Išsaugoti
                             </button>
                         </div>

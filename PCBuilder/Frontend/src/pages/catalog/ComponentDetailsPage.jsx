@@ -55,6 +55,11 @@ function ComponentDetailsPage() {
 
   const { average, count } = getAverageRating(part.id, prototypeReviews)
 
+  function selectconfiguration() {
+    var block = document.getElementById("configuration-select-block");
+    block.style.display = "block";
+  }
+
   return (
     <section className="component-details-page">
       <div className="page-heading">
@@ -159,15 +164,43 @@ function ComponentDetailsPage() {
             Į krepšelį
           </button>
 
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => selectconfiguration()}
+          >
+            Pridėti prie komplektacijos
+          </button>
+
           <a href={`/catalog/${part.id}/price-history`} className="secondary-button">
             Kainų istorija
           </a>
         </div>
 
+        <div id="configuration-select-block" style={{display: "none", marginTop: "15px"}}>
+          <table className="orders-table" style={{width: "50%"}}>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>Žaidimų kompiuteris</td>
+              </tr>
+            </tbody>
+          </table>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => {
+              var block = document.getElementById("configuration-select-block");
+              block.style.display = "none";
+              alert("Pridėjimas į komplektaciją bus galimas tik prijungus duomenų bazę.")
+            }}
+          >
+            Pridėti
+          </button>
+        </div>
+
         {addedQuantity !== null && (
-          <p role="status" className="component-stock">
-            Įdėta į krepšelį: {addedQuantity} vnt.
-          </p>
+          <p role="status" className="component-stock">Įdėta į krepšelį: {addedQuantity} vnt.</p>
         )}
 
         <h2 className="component-section-heading">Specifikacijos</h2>
